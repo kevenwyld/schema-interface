@@ -38,7 +38,7 @@
             }
         },
         {
-            "selector": "node[_type = 'slot']",
+            "selector": "node[_type = 'participant']",
             "style": {
                 "background-color": "#f8d8be",
                 "text-valign": "center",
@@ -97,21 +97,21 @@
             }
         },
         {
-            "selector": "edge[_edge_type = 'step_slot']",
+            "selector": "edge[_edge_type = 'step_participant']",
             "style": {
                 "line-color": "#000080",
                 "width": "2vw"
             }
         },
         {
-            "selector": "edge[_edge_type = 'slot_value']",
+            "selector": "edge[_edge_type = 'participant_value']",
             "style": {
                 "line-color": "#000080",
                 "width": "1vw"
             }
         },
         {
-            "selector": "edge[_edge_type = 'slot_etype']",
+            "selector": "edge[_edge_type = 'participant_etype']",
             "style": {
                 "line-color": "#000080",
                 "width": "1vw"

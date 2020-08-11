@@ -10,8 +10,9 @@ edges = []
 schema_key_dict = {
     'root': ['@id', 'super', 'name', 'description', 'comment'],
     'step': ['@id', '@type', 'aka', 'reference', 'provenance'],
-    'slot': ['@id', 'name', 'aka', 'role', 'entityTypes', 'comment', 'reference'],
-    'value': ['valueId', 'value', 'entityTypes', 'mediaType', 'confidence', 'provenance']
+    'participant': ['@id', 'name', 'aka', 'role', 'entityTypes', 'comment', 'reference'],
+    'value': ['valueId', 'value', 'entityTypes', 'mediaType', 'confidence', 'provenance'],
+    'slot': ['@id', 'refvar', 'roleName', 'super', 'aka']
 }
 
 def create_node(_id, _label, _type, _shape=''):
@@ -86,25 +87,34 @@ def get_nodes_and_edges(schema):
     
     nodes['root'] = extend_node(create_node('root', 'Start', 'root', 'round-rectangle'), schema)
 
+    if 'slots' in schema and isinstance(schema['slots'], list):
+        for slot in schema['slots']:
+            if 'refvar' in slot:
+                nodes[slot['refvar']] = extend_node(create_node(slot['refvar'], slot['roleName'], 'slot', 'ellipse'), slot)
+
     for step in schema['steps']:
         _label = step['@id'].split('/')[-1].replace('_', ' ')
         nodes[step['@id']] = extend_node(create_node(step['@id'], _label, 'step', 'ellipse'), step)
 
         steps_to_connect.append(step['@id'])
 
-        if 'slots' in step and isinstance(step['slots'], list):
-            for slot in step['slots']:
-                nodes[slot['@id']] = extend_node(create_node(slot['@id'], slot['name'], 'slot', 'round-pentagon'), slot)
+        if 'participants' in step and isinstance(step['participants'], list):
+            for participant in step['participants']:
+                nodes[participant['@id']] = extend_node(create_node(participant['@id'], participant['name'], 'participant', 'round-pentagon'), participant)
                 
-                e_id = f"{step['@id']}_{slot['@id']}"
-                edges.append(create_edge(e_id, step['@id'], slot['@id'], _edge_type='step_slot'))
+                e_id = f"{step['@id']}_{participant['@id']}"
+                edges.append(create_edge(e_id, step['@id'], participant['@id'], _edge_type='step_participant'))
 
-                if 'values' in slot and isinstance(slot['values'], list):
-                    for value in slot['values']:
+                if 'refvar' in participant and participant['refvar'] in nodes:
+                    e_id = f"{participant['refvar']}_{participant['@id']}"
+                    edges.append(create_edge(e_id, participant['refvar'], participant['@id'], _edge_type='slot_participant'))
+
+                if 'values' in participant and isinstance(participant['values'], list):
+                    for value in participant['values']:
                         nodes[value['valueId']] = create_node(value['valueId'], value['value'], 'value', 'round-diamond')
 
-                        e_id = f"{slot['@id']}_{value['valueId']}"
-                        edges.append(create_edge(e_id, slot['@id'], value['valueId'], _edge_type='slot_value'))
+                        e_id = f"{participant['@id']}_{value['valueId']}"
+                        edges.append(create_edge(e_id, participant['@id'], value['valueId'], _edge_type='participant_value'))
     
     for order in schema['order']:
         if 'overlaps' in order:
@@ -141,9 +151,9 @@ def get_nodes_and_edges(schema):
                 predicate = relation['relationPredicate'].split('/')[1]
                 rel_object = relation['relationObject'] if isinstance(relation['relationObject'], list) else [relation['relationObject']]
                 for obj in rel_object:
-                    edges.append(create_edge(f"{subject}_{obj}", subject, obj, predicate, 'slot_slot'))
+                    edges.append(create_edge(f"{subject}_{obj}", subject, obj, predicate, 'participant_participant'))
                     if obj not in nodes:
-                        nodes[obj] = create_node(obj, obj, 'slot', 'round-pentagon')
+                        nodes[obj] = create_node(obj, obj, 'participant', 'round-pentagon')
 
     for step in steps_to_connect:
         e = create_edge(f"root_{step}", 'root', step, _edge_type='root_step')
@@ -170,7 +180,7 @@ def get_connencted_nodes(selected_node):
             if (edge['data']['source'] == selected_node or edge['data']['target'] == selected_node) and edge not in e:
                 e.append(edge)
                 node = nodes[edge['data']['target']]
-                if node['data']['_type'] == 'slot':
+                if node['data']['_type'] == 'participant':
                     n.append(node)
                     id_set.add(node['data']['id'])
         for edge in edges:

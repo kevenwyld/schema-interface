@@ -77,7 +77,7 @@ def handle_flags(_flag, _order, node_set):
         'precondition': handle_precondition,
         'optional': handle_optional
     }
-    func = switcher.get(_flag, lambda *args: None)
+    func = switcher.get(_flag.lower(), lambda *args: None)
     return func(_order, node_set)
 
 def get_nodes_and_edges(schema):
@@ -93,7 +93,7 @@ def get_nodes_and_edges(schema):
                 nodes[slot['refvar']] = extend_node(create_node(slot['refvar'], slot['roleName'], 'slot', 'ellipse'), slot)
 
     for step in schema['steps']:
-        _label = step['@id'].split('/')[-1].replace('_', ' ')
+        _label = step['name'].split('/')[-1].replace('_', ' ')
         nodes[step['@id']] = extend_node(create_node(step['@id'], _label, 'step', 'ellipse'), step)
 
         steps_to_connect.append(step['@id'])
@@ -105,16 +105,16 @@ def get_nodes_and_edges(schema):
                 e_id = f"{step['@id']}_{participant['@id']}"
                 edges.append(create_edge(e_id, step['@id'], participant['@id'], _edge_type='step_participant'))
 
-                if 'refvar' in participant and participant['refvar'] in nodes:
+                if 'refvar' in participant and participant['refvar'] and participant['refvar'] in nodes:
                     e_id = f"{participant['refvar']}_{participant['@id']}"
                     edges.append(create_edge(e_id, participant['refvar'], participant['@id'], _edge_type='slot_participant'))
 
                 if 'values' in participant and isinstance(participant['values'], list):
                     for value in participant['values']:
-                        nodes[value['valueId']] = create_node(value['valueId'], value['value'], 'value', 'round-diamond')
+                        nodes[value['name']] = create_node(value['name'], value['name'], 'value', 'round-diamond')
 
-                        e_id = f"{participant['@id']}_{value['valueId']}"
-                        edges.append(create_edge(e_id, participant['@id'], value['valueId'], _edge_type='participant_value'))
+                        e_id = f"{participant['@id']}_{value['name']}"
+                        edges.append(create_edge(e_id, participant['@id'], value['name'], _edge_type='participant_value'))
     
     for order in schema['order']:
         if 'overlaps' in order:
@@ -148,7 +148,7 @@ def get_nodes_and_edges(schema):
         for entityRelation in schema['entityRelations']:
             subject = entityRelation['relationSubject']
             for relation in entityRelation['relations']:
-                predicate = relation['relationPredicate'].split('/')[1]
+                predicate = relation['relationPredicate'].split('/')[-1]
                 rel_object = relation['relationObject'] if isinstance(relation['relationObject'], list) else [relation['relationObject']]
                 for obj in rel_object:
                     edges.append(create_edge(f"{subject}_{obj}", subject, obj, predicate, 'participant_participant'))

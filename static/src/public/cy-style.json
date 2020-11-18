@@ -147,21 +147,21 @@
           "cycleBreaking": "GREEDY",
           "direction": "RIGHT",
           "edgeRouting": "SPLINES",
-          "edgeSpacingFactor": 1.5,
+          "edgeSpacingFactor": 0.7,
           "feedbackEdges": false,
           "fixedAlignment": "NONE",
-          "inLayerSpacingFactor": 1,
-          "layoutHierarchy": false,
+          "inLayerSpacingFactor": 4,
+          "layoutHierarchy": true,
           "linearSegmentsDeflectionDampening": 0.3,
           "mergeEdges": false,
           "mergeHierarchyCrossingEdges": true,
           "nodeLayering": "NETWORK_SIMPLEX",
           "nodePlacement": "LINEAR_SEGMENTS",
-          "randomizationSeed": 1,
+          "randomizationSeed": 10,
           "routeSelfLoopInside": false,
           "separateConnectedComponents": true,
           "spacing": 20,
-          "thoroughness": 10
+          "thoroughness": 20
         }
     }
 }

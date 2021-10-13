@@ -38,7 +38,7 @@ export default function App() {
                 <Link to="/compare">Compare</Link>
               </Col>
               <Col md="3" className="nav-items">
-                <a target="_blank" href="https://github.com/orgs/cu-clear/dashboard">
+                <a target="_blank" href="https://github.com/cu-clear/schema-interface">
                   Github
                   </a>
               </Col>

@@ -31,6 +31,11 @@ class UploadModal extends Component {
   }
 
   checkMimeType(event) {
+    /*
+    Checks whether the selected file has the correct type.
+    If not, throws a toast error and discards the file.
+    */
+
     //getting file object
     let files = event.target.files;
     //define message container
@@ -54,6 +59,11 @@ class UploadModal extends Component {
   }
 
   maxSelectFile(event) {
+    /* 
+    Warns the user if they try to upload more than one file.
+    If so, throws a warning and discards all files.
+    */
+
     let files = event.target.files;
     if (files.length > 1) {
       const msg = 'Only 1 file can be uploaded at a time';
@@ -65,6 +75,11 @@ class UploadModal extends Component {
   }
 
   checkFileSize(event) {
+    /*
+    Checks whether file size is too large.
+    If so, throws an error and discards the file.
+    */
+
     let files = event.target.files;
     let size = 2000000;
     let err = [];
@@ -82,6 +97,10 @@ class UploadModal extends Component {
   }
 
   onChangeHandler(event) {
+    /*
+    Checks the file is valid, then changes state.
+    */
+
     var files = event.target.files;
     if (this.maxSelectFile(event) && this.checkMimeType(event) && this.checkFileSize(event)) {
       // if return true allow to setState
@@ -97,6 +116,12 @@ class UploadModal extends Component {
   }
 
   onClickHandler() {
+    /*
+    Handles green upload button.
+    Shows upload success or failure.
+    If success, closes the sub window.
+    */
+   
     const data = new FormData();
     for (var x = 0; x < this.state.selectedFile.length; x++) {
       data.append('file', this.state.selectedFile[x]);
@@ -119,6 +144,12 @@ class UploadModal extends Component {
   }
 
   render() {
+    /*
+    Renders the upload schema button. 
+    Opens up a sub window where you can upload a file or cancel.
+    Checks the validity of the file.
+    Upon pressing upload, shows an upload progress bar.
+    */
     
     const openModal = () => {
       document.getElementById("btn-modal").blur();

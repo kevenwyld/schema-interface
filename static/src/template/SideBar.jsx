@@ -6,6 +6,10 @@ import Divider from '@material-ui/core/Divider';
 import isEmpty from 'lodash/isEmpty';
 
 function SideBar (props) {
+    /*
+    Handles sidebar that shows general information about a node
+    selected via right-click.
+    */
     let i = 0;
     const excluded_ids = ['id', '_label', '_type', '_shape'];
     

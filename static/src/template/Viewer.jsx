@@ -52,20 +52,25 @@ class Viewer extends Component {
         let sidebarClassName = this.state.isOpen ? "sidebar-open" : "sidebar-closed";
         let canvasClassName = this.state.isOpen ? "canvas-shrunk": "canvas-wide";
 
+        // a schema exists
         if (this.state.schemaResponse !== '') {
+            // shrink the header to make space for the schema
             navEle = document.getElementsByClassName('Header')[0];
             navEle.classList.add("shrink");
             
+            // title of schema
             schemaHeading = <h3 className="schema-name col-md-8" style={{textAlign: 'center'}}>
                                 {this.state.schemaName}
                             </h3>;
 
+            // graph (cytoscape) in the middle
             canvas = <Canvas id="canvas"
                 elements={this.state.schemaResponse}
                 sidebarCallback={this.sidebarCallback}
                 className={canvasClassName}
             />;
             
+            // json editor on the right
             jsonViewer = <JsonView 
                 schemaJson={this.state.schemaJson} 
                 parentCallback={this.callbackFunction}

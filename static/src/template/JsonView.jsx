@@ -7,6 +7,10 @@ import isArray from 'lodash/isArray';
 import isObject from 'lodash/isObject';
 
 class JsonView extends Component {
+    /*
+    Handles the Json viewer and editor.
+    Allows you to add, edit, and delete nodes.
+    */
     constructor(props) {
         super(props);
 

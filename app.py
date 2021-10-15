@@ -7,6 +7,7 @@ json_string = ''
 nodes = {}
 edges = []
 
+# TODO: be able to read quizlet 7 schema.json
 schema_key_dict = {
     'root': ['@id', 'super', 'name', 'description', 'comment'],
     'step': ['@id', '@type', 'aka', 'reference', 'provenance'],

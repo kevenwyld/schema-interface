@@ -83,6 +83,14 @@ def extend_node(node, obj):
     return node
 
 def handle_precondition(order, node_set, label='Precondition'):
+    """Adds edges between multiple previous and next nodes.
+    
+    Parameters:
+    order (dict): links to "before" and "after" nodes
+    node_set (dict): nodes to be linked
+    label (str): shows order on graph
+
+    """
     e = []
     if isinstance(order['before'], list):
         for before_id in order['before']:
@@ -108,9 +116,19 @@ def handle_precondition(order, node_set, label='Precondition'):
     return e
 
 def handle_optional(_order, node_set):
+    """Calls handle_precondition with thet optional label.
+    
+    """
     return handle_precondition(_order, node_set, 'Optional')
 
 def handle_flags(_flag, _order, node_set):
+    """Calls handle_precondition or handle_optional based on flag.
+
+    Parameters:
+    _flag (str): flag raised in order dictionary
+    _node_set (dict): set of nodes to be handled
+    
+    """
     switcher={
         'precondition': handle_precondition,
         'optional': handle_optional
@@ -119,7 +137,8 @@ def handle_flags(_flag, _order, node_set):
     return func(_order, node_set)
 
 def get_nodes_and_edges(schema):
-    """Creates lists of nodes and edges.
+    """Creates lists of nodes and edges, through references and
+    relations.
 
     Parameters:
     schema (dict): contains information on all nodes and edges in a schema.
@@ -175,12 +194,15 @@ def get_nodes_and_edges(schema):
             # for node_id in order['overlaps']:
             #     node = get_node_by_id(node_id)
             #     node['classes'] = ' overlapped'
+        # not in sample schema
         elif 'contained' in order and 'container' in order:
             if nodes[order['contained']]:
                 nodes[order['contained']]['data']['parent'] = order['container']
+        # prev node and next node
         elif 'before' in order and 'after' in order:
             e = []
             
+            # not in sample schema
             if 'flags' in order:
                 e = handle_flags(order['flags'], order, nodes)
             else:
@@ -189,6 +211,7 @@ def get_nodes_and_edges(schema):
                     entry['classes'] = 'optional-before'
             edges.extend(e)
             
+            # remove connected nodes from the step list
             if isinstance(order['after'], list):
                 for step_id in order['after']:
                     if step_id in steps_to_connect:
@@ -197,7 +220,7 @@ def get_nodes_and_edges(schema):
                 if order['after'] in steps_to_connect:
                         steps_to_connect.remove(order['after'])
 
-    # labels the edges, "relations"?
+    # labels edges with relations; creates new participant nodes if the node does not exist
     if 'entityRelations' in schema and isinstance(schema['entityRelations'], list):
         for entityRelation in schema['entityRelations']:
             subject = entityRelation['relationSubject']

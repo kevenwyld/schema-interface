@@ -8,6 +8,9 @@ nodes = {}
 edges = []
 
 # TODO: be able to read quizlet 7 schema.json
+# TODO: read the first schema (Disease Outbreak with Hierarchy)
+
+# KSF version 0.8
 schema_key_dict = {
     'root': ['@id', 'super', 'name', 'description', 'comment'],
     'step': ['@id', '@type', 'aka', 'reference', 'provenance'],
@@ -16,7 +19,23 @@ schema_key_dict = {
     'slot': ['@id', 'refvar', 'roleName', 'super', 'aka']
 }
 
+# SDF version 1.2
+# schema_key_dict = {
+#     'root': ['@id', 'name', 'description', 'comment', '@type', 'repeatable'],
+#     'participant': ['@id', 'roleName', 'entity'],
+#     'child': ['child', 'comment', 'outlinks', 'outlink_gate', 'optional']
+# }
+
 def create_node(_id, _label, _type, _shape=''):
+    """Creates a node.
+
+    Parameters:
+    _id (str): unique id
+    _label (str): label shown in graph
+    _type (str): type of node according to schema_key_dict
+    _shape (str): shape as visualized in graph
+    
+    """
     return {
         'data': {
             'id': _id,
@@ -28,6 +47,16 @@ def create_node(_id, _label, _type, _shape=''):
     }
 
 def create_edge(_id, _source, _target, _label='', _edge_type=''):
+    """Creates an edge.
+
+    Parameters:
+    _id (str): source_target
+    _source (str): source node @id
+    _target (str): target node @id
+    _label (str): label shown in graph
+    _edge_type (str): type of edge, influences shape on graph
+    
+    """
     return {
         'data': {
             'id': _id,
@@ -40,6 +69,14 @@ def create_edge(_id, _source, _target, _label='', _edge_type=''):
     }
 
 def extend_node(node, obj):
+    """Adds values to the node according to the node type.
+
+    Parameters:
+    node (dict): node to extend
+    obj (dict): schema with data on the node
+    
+    """
+
     for key in obj.keys():
         if key in schema_key_dict[node['data']['_type']]:
             node['data'][key] = obj[key]
@@ -82,17 +119,29 @@ def handle_flags(_flag, _order, node_set):
     return func(_order, node_set)
 
 def get_nodes_and_edges(schema):
+    """Creates lists of nodes and edges.
+
+    Parameters:
+    schema (dict): contains information on all nodes and edges in a schema.
+
+    Returns:
+    nodes (dict): dictionary of nodes
+    edges (list): list of edges 
+
+    """
     nodes = {}
     edges = []
     steps_to_connect = []
     
     nodes['root'] = extend_node(create_node('root', 'Start', 'root', 'round-rectangle'), schema)
 
+    # what is slots referring to? I don't see it on the graph
     if 'slots' in schema and isinstance(schema['slots'], list):
         for slot in schema['slots']:
             if 'refvar' in slot:
                 nodes[slot['refvar']] = extend_node(create_node(slot['refvar'], slot['roleName'], 'slot', 'ellipse'), slot)
 
+    # nodes and edges to show on graph, ie. children and participants
     for step in schema['steps']:
         _label = step['name'].split('/')[-1].replace('_', ' ')
         nodes[step['@id']] = extend_node(create_node(step['@id'], _label, 'step', 'ellipse'), step)
@@ -106,10 +155,12 @@ def get_nodes_and_edges(schema):
                 e_id = f"{step['@id']}_{participant['@id']}"
                 edges.append(create_edge(e_id, step['@id'], participant['@id'], _edge_type='step_participant'))
 
+                # coreference 
                 if 'refvar' in participant and participant['refvar'] and participant['refvar'] in nodes:
                     e_id = f"{participant['refvar']}_{participant['@id']}"
                     edges.append(create_edge(e_id, participant['refvar'], participant['@id'], _edge_type='slot_participant'))
 
+                # not in the sample schema
                 if 'values' in participant and isinstance(participant['values'], list):
                     for value in participant['values']:
                         nodes[value['name']] = create_node(value['name'], value['name'], 'value', 'round-diamond')
@@ -117,6 +168,7 @@ def get_nodes_and_edges(schema):
                         e_id = f"{participant['@id']}_{value['name']}"
                         edges.append(create_edge(e_id, participant['@id'], value['name'], _edge_type='participant_value'))
     
+    # order of events ie. outlinks
     for order in schema['order']:
         if 'overlaps' in order:
             pass
@@ -145,6 +197,7 @@ def get_nodes_and_edges(schema):
                 if order['after'] in steps_to_connect:
                         steps_to_connect.remove(order['after'])
 
+    # labels the edges, "relations"?
     if 'entityRelations' in schema and isinstance(schema['entityRelations'], list):
         for entityRelation in schema['entityRelations']:
             subject = entityRelation['relationSubject']
@@ -156,6 +209,7 @@ def get_nodes_and_edges(schema):
                     if obj not in nodes:
                         nodes[obj] = create_node(obj, obj, 'participant', 'round-pentagon')
 
+    # connects root edge to the first Start node
     for step in steps_to_connect:
         e = create_edge(f"root_{step}", 'root', step, _edge_type='root_step')
         e['classes'] = 'root-edge'
@@ -208,7 +262,7 @@ def homepage():
 def upload():
     file = request.files['file']
     schema_string = file.read().decode("utf-8")
-    schemaJson = json.loads(schema_string)['events']
+    schemaJson = json.loads(schema_string)['schemas']
     schema = schemaJson[0]
     global nodes
     global edges

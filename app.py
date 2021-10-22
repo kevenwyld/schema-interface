@@ -163,7 +163,7 @@ def get_nodes_and_edges(schema):
         
     return nodes, edges
 
-def get_connencted_nodes(selected_node):
+def get_connected_nodes(selected_node):
     n = []
     e = []
     id_set = set()
@@ -208,13 +208,13 @@ def homepage():
 def upload():
     file = request.files['file']
     schema_string = file.read().decode("utf-8")
-    schemaJson = json.loads(schema_string)['schemas']
+    schemaJson = json.loads(schema_string)['events']
     schema = schemaJson[0]
     global nodes
     global edges
     nodes, edges = get_nodes_and_edges(schema)
     schema_name = schema['name']
-    parsed_schema = get_connencted_nodes('root')
+    parsed_schema = get_connected_nodes('root')
     return json.dumps({
         'parsedSchema': parsed_schema,
         'name': schema['name'],
@@ -226,7 +226,7 @@ def get_subtree():
     if not (bool(nodes) and bool(edges)):
         return 'Parsing error! Upload the file again.', 400
     node_id = request.args.get('ID')
-    subtree = get_connencted_nodes(node_id)
+    subtree = get_connected_nodes(node_id)
     return json.dumps(subtree)
 
 @app.route('/reload', methods=['POST'])
@@ -238,7 +238,7 @@ def reload_schema():
     global edges
     nodes, edges = get_nodes_and_edges(schema)
     schema_name = schema['name']
-    parsed_schema = get_connencted_nodes('root')
+    parsed_schema = get_connected_nodes('root')
     return json.dumps({
         'parsedSchema': parsed_schema,
         'name': schema['name'],

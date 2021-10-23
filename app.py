@@ -11,20 +11,20 @@ edges = []
 # TODO: read the first schema (Disease Outbreak with Hierarchy)
 
 # KSF version 0.8
-schema_key_dict = {
-    'root': ['@id', 'super', 'name', 'description', 'comment'],
-    'step': ['@id', '@type', 'aka', 'reference', 'provenance'],
-    'participant': ['@id', 'name', 'aka', 'role', 'entityTypes', 'comment', 'reference'],
-    'value': ['valueId', 'value', 'entityTypes', 'mediaType', 'confidence', 'provenance'],
-    'slot': ['@id', 'refvar', 'roleName', 'super', 'aka']
-}
+# schema_key_dict = {
+#     'root': ['@id', 'super', 'name', 'description', 'comment'],
+#     'step': ['@id', '@type', 'aka', 'reference', 'provenance'],
+#     'participant': ['@id', 'name', 'aka', 'role', 'entityTypes', 'comment', 'reference'],
+#     'value': ['valueId', 'value', 'entityTypes', 'mediaType', 'confidence', 'provenance'],
+#     'slot': ['@id', 'refvar', 'roleName', 'super', 'aka']
+# }
 
 # SDF version 1.2
-# schema_key_dict = {
-#     'root': ['@id', 'name', 'description', 'comment', '@type', 'repeatable'],
-#     'participant': ['@id', 'roleName', 'entity'],
-#     'child': ['child', 'comment', 'outlinks', 'outlink_gate', 'optional']
-# }
+schema_key_dict = {
+    'root': ['@id', 'name', 'description', 'comment', '@type', 'repeatable'],
+    'participant': ['@id', 'roleName', 'entity'],
+    'child': ['child', 'comment', 'outlinks', 'outlink_gate', 'optional']
+}
 
 def create_node(_id, _label, _type, _shape=''):
     """Creates a node.
@@ -46,11 +46,10 @@ def create_node(_id, _label, _type, _shape=''):
         'classes': ''
     }
 
-def create_edge(_id, _source, _target, _label='', _edge_type=''):
-    """Creates an edge.
+def create_edge(_source, _target, _label='', _edge_type=''):
+    """Creates an edge whose id is "source_target".
 
     Parameters:
-    _id (str): source_target
     _source (str): source node @id
     _target (str): target node @id
     _label (str): label shown in graph
@@ -59,7 +58,7 @@ def create_edge(_id, _source, _target, _label='', _edge_type=''):
     """
     return {
         'data': {
-            'id': _id,
+            'id': f"{_source}_{_target}",
             '_label': _label,
             'source': _source,
             'target': _target,
@@ -97,22 +96,18 @@ def handle_precondition(order, node_set, label='Precondition'):
             if isinstance(order['after'], list):
                 for after_id in order['after']:
                     if before_id in node_set and after_id in node_set:
-                        e_id = f"{before_id}_{after_id}"
-                        e.append(create_edge(e_id, before_id, after_id, label, 'step_step'))
+                        e.append(create_edge(before_id, after_id, label, 'step_step'))
             else:
                 if before_id in node_set and order['after'] in node_set:
-                    e_id = f"{before_id}_{order['after']}"
-                    e.append(create_edge(e_id, before_id, order['after'], label, 'step_step'))
+                    e.append(create_edge(before_id, order['after'], label, 'step_step'))
     else:
         if isinstance(order['after'], list):
             for after_id in order['after']:
                 if order['before'] in node_set and after_id in node_set:
-                    e_id = f"{order['before']}_{after_id}"
-                    e.append(create_edge(e_id, order['before'], after_id, label, 'step_step'))
+                    e.append(create_edge(order['before'], after_id, label, 'step_step'))
         else:
             if order['before'] in node_set and order['after'] in node_set:
-                e_id = f"{order['before']}_{order['after']}"
-                e.append(create_edge(e_id, order['before'], order['after'], label, 'step_step'))
+                e.append(create_edge(order['before'], order['after'], label, 'step_step'))
     return e
 
 def handle_optional(_order, node_set):
@@ -137,8 +132,7 @@ def handle_flags(_flag, _order, node_set):
     return func(_order, node_set)
 
 def get_nodes_and_edges(schema):
-    """Creates lists of nodes and edges, through references and
-    relations.
+    """Creates lists of nodes and edges, through references and relations.
 
     Parameters:
     schema (dict): contains information on all nodes and edges in a schema.
@@ -150,127 +144,103 @@ def get_nodes_and_edges(schema):
     """
     nodes = {}
     edges = []
-    steps_to_connect = []
+    connect = []
     
-    nodes['root'] = extend_node(create_node('root', 'Start', 'root', 'round-rectangle'), schema)
-
-    # what is slots referring to? I don't see it on the graph
-    if 'slots' in schema and isinstance(schema['slots'], list):
-        for slot in schema['slots']:
-            if 'refvar' in slot:
-                nodes[slot['refvar']] = extend_node(create_node(slot['refvar'], slot['roleName'], 'slot', 'ellipse'), slot)
-
-    # nodes and edges to show on graph, ie. children and participants
-    for step in schema['steps']:
-        _label = step['name'].split('/')[-1].replace('_', ' ')
-        nodes[step['@id']] = extend_node(create_node(step['@id'], _label, 'step', 'ellipse'), step)
-
-        steps_to_connect.append(step['@id'])
-
-        if 'participants' in step and isinstance(step['participants'], list):
-            for participant in step['participants']:
-                nodes[participant['@id']] = extend_node(create_node(participant['@id'], participant['name'], 'participant', 'round-pentagon'), participant)
-                
-                e_id = f"{step['@id']}_{participant['@id']}"
-                edges.append(create_edge(e_id, step['@id'], participant['@id'], _edge_type='step_participant'))
-
-                # coreference 
-                if 'refvar' in participant and participant['refvar'] and participant['refvar'] in nodes:
-                    e_id = f"{participant['refvar']}_{participant['@id']}"
-                    edges.append(create_edge(e_id, participant['refvar'], participant['@id'], _edge_type='slot_participant'))
-
-                # not in the sample schema
-                if 'values' in participant and isinstance(participant['values'], list):
-                    for value in participant['values']:
-                        nodes[value['name']] = create_node(value['name'], value['name'], 'value', 'round-diamond')
-
-                        e_id = f"{participant['@id']}_{value['name']}"
-                        edges.append(create_edge(e_id, participant['@id'], value['name'], _edge_type='participant_value'))
+    # dummy root node
+    nodes['root'] = create_node('root', 'Start', 'root_1', 'round-rectangle')
     
-    # order of events ie. outlinks
-    for order in schema['order']:
-        if 'overlaps' in order:
-            pass
-            # for node_id in order['overlaps']:
-            #     node = get_node_by_id(node_id)
-            #     node['classes'] = ' overlapped'
-        # not in sample schema
-        elif 'contained' in order and 'container' in order:
-            if nodes[order['contained']]:
-                nodes[order['contained']]['data']['parent'] = order['container']
-        # prev node and next node
-        elif 'before' in order and 'after' in order:
-            e = []
-            
-            # not in sample schema
-            if 'flags' in order:
-                e = handle_flags(order['flags'], order, nodes)
-            else:
-                e = handle_precondition(order, nodes, 'Before')
-                for entry in e:
-                    entry['classes'] = 'optional-before'
-            edges.extend(e)
-            
-            # remove connected nodes from the step list
-            if isinstance(order['after'], list):
-                for step_id in order['after']:
-                    if step_id in steps_to_connect:
-                        steps_to_connect.remove(step_id)
-            else:
-                if order['after'] in steps_to_connect:
-                        steps_to_connect.remove(order['after'])
+    # root node
+    _label = schema['name'].split('/')[-1].replace('_', ' ').replace('-', ' ')
+    nodes[schema['@id']] = extend_node(create_node(schema['@id'], _label, 'root', 'diamond'), schema)
 
-    # labels edges with relations; creates new participant nodes if the node does not exist
-    if 'entityRelations' in schema and isinstance(schema['entityRelations'], list):
-        for entityRelation in schema['entityRelations']:
-            subject = entityRelation['relationSubject']
-            for relation in entityRelation['relations']:
-                predicate = relation['relationPredicate'].split('/')[-1]
-                rel_object = relation['relationObject'] if isinstance(relation['relationObject'], list) else [relation['relationObject']]
-                for obj in rel_object:
-                    edges.append(create_edge(f"{subject}_{obj}", subject, obj, predicate, 'participant_participant'))
-                    if obj not in nodes:
-                        nodes[obj] = create_node(obj, obj, 'participant', 'round-pentagon')
+    # not root node, add to connect list and change node type
+    if '@type' in nodes[schema['@id']]['data']:
+        connect.append(schema['@id'])
+        nodes[schema['@id']]['data']['_type'] = 'step'
+        # not hierarchical node, change node shape
+        if 'children' not in schema:
+            nodes[schema['@id']]['data']['_shape'] = 'ellipse'
+
+    # participants
+    if 'participants' in schema:
+        for participant in schema['participants']:
+            _label = _label = participant['roleName'].split('/')[-1].replace('_', '')
+            nodes[participant['@id']] = extend_node(create_node(participant['@id'], _label, 'participant', 'round-pentagon'), participant)
+
+            edges.append(create_edge(schema['@id'], participant['@id'], _edge_type='participant'))
+
+    # children
+    if 'children' in schema:
+        for child in schema['children']:
+            nodes[child['child']] = extend_node(create_node(child['child'], child['comment'], 'child', 'ellipse'), child)
+
+            edges.append(create_edge(schema['@id'], child['child'], _edge_type='child'))
+            # check for outlinks
+            if len(child['outlinks']):
+                for outlink in child['outlinks']:
+                    edges.append(create_edge(child['child'], outlink, _edge_type='outlink'))
+
+    # TODO: deal with the nodes to be connected in connect
+
+    # === are these two necessary? ===
+    # TODO: entities
+
+    # TODO: relations
+    # if 'relations' in schema and len(schema['relations']):
+    #     # generalize, although at the moment UIUC Q7 only has these two predicates
+    #     predicates = {'Q19267375':'proximity', 'Q6498684':'ownership'}
+    #     for relation in schema['relations']:
 
     # connects root edge to the first Start node
-    for step in steps_to_connect:
-        e = create_edge(f"root_{step}", 'root', step, _edge_type='root_step')
+    for c in connect:
+        e = create_edge('root', c, _edge_type='root_step')
         e['classes'] = 'root-edge'
         edges.append(e)
-        
+
     return nodes, edges
 
 def get_connected_nodes(selected_node):
+    """Constructs graph to be visualized by the viewer.
+
+    Parameters:
+    selected_node (str): name of node that serves as the topmost node.
+
+    Returns:
+    dict:list of nodes and list of edges
+    
+    """
     n = []
     e = []
-    id_set = set()
+    # id_set = set()
     
     if selected_node == 'root':
-        n.append(nodes[selected_node])
+        # don't want the dummy root node
+        # n.append(nodes[selected_node])
         for key, node in nodes.items():
-            if node['data']['_type'] == 'step':
+            if node['data']['_type'] in ['root', 'child']:
                 n.append(node)
         for edge in edges:
-            if edge['data']['_edge_type'] == 'step_step' or edge['data']['_edge_type'] == 'root_step':
+            if edge['data']['_edge_type'] in ['child', 'outlink']:
                 e.append(edge)
-    else:
-        for edge in edges:
-            if (edge['data']['source'] == selected_node or edge['data']['target'] == selected_node) and edge not in e:
-                e.append(edge)
-                node = nodes[edge['data']['target']]
-                if node['data']['_type'] == 'participant':
-                    n.append(node)
-                    id_set.add(node['data']['id'])
-        for edge in edges:
-            if edge['data']['source'] in id_set or edge['data']['target'] in id_set:
-                if edge not in e:
-                    e.append(edge)
-                    source_node = nodes[edge['data']['source']]
-                    target_node = nodes[edge['data']['target']]
-                    if source_node not in n:
-                        n.append(source_node)
-                    if target_node not in n:
-                        n.append(target_node)
+    # else:
+    #     for edge in edges:
+    #         if (edge['data']['source'] == selected_node or edge['data']['target'] == selected_node) and edge not in e:
+    #             e.append(edge)
+    #             node = nodes[edge['data']['target']]
+    #             if node['data']['_type'] == 'participant':
+    #                 n.append(node)
+    #                 id_set.add(node['data']['id'])
+    #     # add missing edges
+    #     for edge in edges:
+    #         if edge['data']['source'] in id_set or edge['data']['target'] in id_set:
+    #             if edge not in e:
+    #                 e.append(edge)
+    #                 source_node = nodes[edge['data']['source']]
+    #                 target_node = nodes[edge['data']['target']]
+    #                 if source_node not in n:
+    #                     n.append(source_node)
+    #                 if target_node not in n:
+    #                     n.append(target_node)
             
     return {
         'nodes': n,
@@ -285,7 +255,8 @@ def homepage():
 def upload():
     file = request.files['file']
     schema_string = file.read().decode("utf-8")
-    schemaJson = json.loads(schema_string)['schemas']
+    schemaJson = json.loads(schema_string)['events']
+    # TODO: extend to all schemas, not just the first one
     schema = schemaJson[0]
     global nodes
     global edges
@@ -300,6 +271,7 @@ def upload():
 
 @app.route('/node', methods=['GET'])
 def get_subtree():
+    """Gets subtree of the selected node."""
     if not (bool(nodes) and bool(edges)):
         return 'Parsing error! Upload the file again.', 400
     node_id = request.args.get('ID')
@@ -308,6 +280,7 @@ def get_subtree():
 
 @app.route('/reload', methods=['POST'])
 def reload_schema():
+    """Reloads schema; does the same thing as upload."""
     schema_string = request.data.decode("utf-8")
     schemaJson = json.loads(schema_string)
     schema = schemaJson[0]

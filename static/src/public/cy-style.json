@@ -6,8 +6,6 @@
                 "content": "data(_label)",
                 "shape": "data(_shape)",
                 "width": "90vw",
-                "text-valign": "center",
-                "text-halign": "center",
                 "font-size": "10vh",
                 "font-weight": "bold",
                 "text-wrap": "wrap",
@@ -17,6 +15,12 @@
                 "border-color": "#777",
                 "border-width": "1vw",
                 "border-style": "solid"
+            }
+        },
+        {
+            "selector": ".schema",
+            "style": {
+                "background-color": "3d3fc6"
             }
         },
         {
@@ -32,15 +36,15 @@
             }
         },
         {
-            "selector": "node[id = 'root']",
+            "selector": "node[_type = 'root']",
             "style": {
-                "background-color": "#eeeeee"
+                "background-color": "#3d3fc6"
             }
         },
         {
             "selector": "node[_type = 'participant']",
             "style": {
-                "background-color": "#f8d8be",
+                "background-color": "gray",
                 "text-valign": "center",
                 "text-halign": "center"
             }
@@ -48,16 +52,7 @@
         {
             "selector": "node[_type = 'step']",
             "style": {
-                "background-color": "#c7ebe6",
-                "text-valign": "center",
-                "text-halign": "center"
-            }
-        },
-        {
-            "selector": "node:parent",
-            "style": {
-                "text-valign": "top",
-                "text-halign": "center"
+                "background-color": "#c7ebe6"
             }
         },
         {
@@ -67,18 +62,13 @@
             }
         },
         {
-            "selector": ".overlapped",
-            "style": {
-                "border-color": "#a7bf37"
-            }
-        },
-        {
             "selector": "edge",
             "style": {
                 "label": "data(_label)",
                 "font-size": "12vh",
                 "curve-style": "bezier",
                 "target-arrow-shape": "triangle",
+                "line-color": "#000000",
                 "line-style": "solid",
                 "edge-text-rotation": "autorotate"
             }
@@ -86,13 +76,14 @@
         {
             "selector": ".root-edge",
             "style": {
-                "line-color": "#dadad7"
+                "line-color": "9fe8d9"
             }
         },
         {
             "selector": "edge[_edge_type = 'step_step']",
             "style": {
-                "line-color": "#dadad7",
+                "line-color": "#9fe8d9",
+                "target-arrow-shape": "none",
                 "width": "3vw"
             }
         },
@@ -106,7 +97,7 @@
         {
             "selector": "edge[_edge_type = 'participant_value']",
             "style": {
-                "line-color": "#000080",
+                "line-color": "#000000",
                 "width": "1vw"
             }
         },
@@ -139,29 +130,29 @@
         "animate": false,
         "animationDuration": 500,
         "klay": {
-          "addUnnecessaryBendpoints": false,
-          "aspectRatio": 1.6,
-          "borderSpacing": 20,
-          "compactComponents": false,
-          "crossingMinimization": "LAYER_SWEEP",
-          "cycleBreaking": "GREEDY",
-          "direction": "RIGHT",
-          "edgeRouting": "SPLINES",
-          "edgeSpacingFactor": 0.7,
-          "feedbackEdges": false,
-          "fixedAlignment": "NONE",
-          "inLayerSpacingFactor": 4,
-          "layoutHierarchy": true,
-          "linearSegmentsDeflectionDampening": 0.3,
-          "mergeEdges": false,
-          "mergeHierarchyCrossingEdges": true,
-          "nodeLayering": "NETWORK_SIMPLEX",
-          "nodePlacement": "LINEAR_SEGMENTS",
-          "randomizationSeed": 10,
-          "routeSelfLoopInside": false,
-          "separateConnectedComponents": true,
-          "spacing": 20,
-          "thoroughness": 20
+            "addUnnecessaryBendpoints": false,
+            "aspectRatio": 1.6,
+            "borderSpacing": 20,
+            "compactComponents": false,
+            "crossingMinimization": "LAYER_SWEEP",
+            "cycleBreaking": "GREEDY",
+            "direction": "RIGHT",
+            "edgeRouting": "SPLINES",
+            "edgeSpacingFactor": 0.7,
+            "feedbackEdges": false,
+            "fixedAlignment": "NONE",
+            "inLayerSpacingFactor": 4,
+            "layoutHierarchy": true,
+            "linearSegmentsDeflectionDampening": 0.3,
+            "mergeEdges": false,
+            "mergeHierarchyCrossingEdges": true,
+            "nodeLayering": "NETWORK_SIMPLEX",
+            "nodePlacement": "LINEAR_SEGMENTS",
+            "randomizationSeed": 10,
+            "routeSelfLoopInside": false,
+            "separateConnectedComponents": true,
+            "spacing": 20,
+            "thoroughness": 20
         }
     }
 }

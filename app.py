@@ -23,7 +23,7 @@ edges = []
 schema_key_dict = {
     'root': ['@id', 'name', 'description', 'comment', '@type', 'repeatable'],
     'participant': ['@id', 'roleName', 'entity'],
-    'child': ['child', 'comment', 'outlinks', 'outlink_gate', 'optional']
+    'step': ['child', 'comment', 'outlinks', 'outlink_gate', 'optional']
 }
 
 def create_node(_id, _label, _type, _shape=''):
@@ -144,19 +144,20 @@ def get_nodes_and_edges(schema):
     """
     nodes = {}
     edges = []
-    connect = []
+    steps_to_connect = []
     
     # dummy root node
-    nodes['root'] = create_node('root', 'Start', 'root_1', 'round-rectangle')
+    nodes['root'] = create_node('root', 'Start', 'root', 'round-rectangle')
     
     # root node
     _label = schema['name'].split('/')[-1].replace('_', ' ').replace('-', ' ')
     nodes[schema['@id']] = extend_node(create_node(schema['@id'], _label, 'root', 'diamond'), schema)
+    nodes[schema['@id']]['classes'] = 'schema'
+    steps_to_connect.append(schema['@id'])
 
     # not root node, add to connect list and change node type
     if '@type' in nodes[schema['@id']]['data']:
-        connect.append(schema['@id'])
-        nodes[schema['@id']]['data']['_type'] = 'step'
+        steps_to_connect.append(schema['@id'])
         # not hierarchical node, change node shape
         if 'children' not in schema:
             nodes[schema['@id']]['data']['_shape'] = 'ellipse'
@@ -165,20 +166,20 @@ def get_nodes_and_edges(schema):
     if 'participants' in schema:
         for participant in schema['participants']:
             _label = _label = participant['roleName'].split('/')[-1].replace('_', '')
-            nodes[participant['@id']] = extend_node(create_node(participant['@id'], _label, 'participant', 'round-pentagon'), participant)
+            nodes[participant['@id']] = extend_node(create_node(participant['@id'], _label, 'participant', 'round-square'), participant)
 
-            edges.append(create_edge(schema['@id'], participant['@id'], _edge_type='participant'))
+            edges.append(create_edge(schema['@id'], participant['@id'], _edge_type='step_participant'))
 
     # children
     if 'children' in schema:
         for child in schema['children']:
-            nodes[child['child']] = extend_node(create_node(child['child'], child['comment'], 'child', 'ellipse'), child)
+            nodes[child['child']] = extend_node(create_node(child['child'], child['comment'], 'step', 'ellipse'), child)
 
-            edges.append(create_edge(schema['@id'], child['child'], _edge_type='child'))
+            edges.append(create_edge(schema['@id'], child['child'], _edge_type='step_step'))
             # check for outlinks
             if len(child['outlinks']):
                 for outlink in child['outlinks']:
-                    edges.append(create_edge(child['child'], outlink, _edge_type='outlink'))
+                    edges.append(create_edge(child['child'], outlink, _edge_type='participant_value'))
 
     # TODO: deal with the nodes to be connected in connect
 
@@ -191,9 +192,20 @@ def get_nodes_and_edges(schema):
     #     predicates = {'Q19267375':'proximity', 'Q6498684':'ownership'}
     #     for relation in schema['relations']:
 
+    # if 'entityRelations' in schema and isinstance(schema['entityRelations'], list):
+    #     for entityRelation in schema['entityRelations']:
+    #         subject = entityRelation['relationSubject']
+    #         for relation in entityRelation['relations']:
+    #             predicate = relation['relationPredicate'].split('/')[-1]
+    #             rel_object = relation['relationObject'] if isinstance(relation['relationObject'], list) else [relation['relationObject']]
+    #             for obj in rel_object:
+    #                 edges.append(create_edge(f"{subject}_{obj}", subject, obj, predicate, 'participant_participant'))
+    #                 if obj not in nodes:
+    #                     nodes[obj] = create_node(obj, obj, 'participant', 'round-pentagon')
+        
     # connects root edge to the first Start node
-    for c in connect:
-        e = create_edge('root', c, _edge_type='root_step')
+    for step in steps_to_connect:
+        e = create_edge('root', step, _edge_type='root_step')
         e['classes'] = 'root-edge'
         edges.append(e)
 
@@ -217,10 +229,10 @@ def get_connected_nodes(selected_node):
         # don't want the dummy root node
         # n.append(nodes[selected_node])
         for key, node in nodes.items():
-            if node['data']['_type'] in ['root', 'child']:
+            if node['data']['_type'] in ['root', 'step']:
                 n.append(node)
         for edge in edges:
-            if edge['data']['_edge_type'] in ['child', 'outlink']:
+            if edge['data']['_edge_type'] in ['root_step', 'step_step', 'participant_value']:
                 e.append(edge)
     # else:
     #     for edge in edges:

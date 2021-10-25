@@ -44,15 +44,13 @@
         {
             "selector": "node[_type = 'participant']",
             "style": {
-                "background-color": "gray",
-                "text-valign": "center",
-                "text-halign": "center"
+                "background-color": "gray"
             }
         },
         {
-            "selector": "node[_type = 'step']",
+            "selector": "node[_type = 'child']",
             "style": {
-                "background-color": "#c7ebe6"
+                "background-color": "#f1c232"
             }
         },
         {
@@ -68,44 +66,33 @@
                 "font-size": "12vh",
                 "curve-style": "bezier",
                 "target-arrow-shape": "triangle",
-                "line-color": "#000000",
+                "target-arrow-color": "#000000",
                 "line-style": "solid",
                 "edge-text-rotation": "autorotate"
             }
         },
         {
-            "selector": ".root-edge",
+            "selector": "edge[_edge_type = 'step_child']",
             "style": {
-                "line-color": "9fe8d9"
-            }
-        },
-        {
-            "selector": "edge[_edge_type = 'step_step']",
-            "style": {
-                "line-color": "#9fe8d9",
+                "line-color": "#189ad3",
                 "target-arrow-shape": "none",
-                "width": "3vw"
+                "width": "1vw"
             }
         },
         {
             "selector": "edge[_edge_type = 'step_participant']",
             "style": {
-                "line-color": "#000080",
+                "target-arrow-color": "#777",
+                "line-color": "#777",
+                "line-style": "dashed",
                 "width": "2vw"
             }
         },
         {
-            "selector": "edge[_edge_type = 'participant_value']",
+            "selector": "edge[_edge_type = 'child_outlink']",
             "style": {
                 "line-color": "#000000",
-                "width": "1vw"
-            }
-        },
-        {
-            "selector": "edge[_edge_type = 'participant_etype']",
-            "style": {
-                "line-color": "#000080",
-                "width": "1vw"
+                "width": "2vw"
             }
         },
         {

@@ -23,7 +23,7 @@ edges = []
 schema_key_dict = {
     'root': ['@id', 'name', 'description', 'comment', '@type', 'repeatable'],
     'participant': ['@id', 'roleName', 'entity'],
-    'step': ['child', 'comment', 'outlinks', 'outlink_gate', 'optional']
+    'child': ['child', 'comment', 'outlinks', 'outlink_gate', 'optional']
 }
 
 def create_node(_id, _label, _type, _shape=''):
@@ -96,18 +96,18 @@ def handle_precondition(order, node_set, label='Precondition'):
             if isinstance(order['after'], list):
                 for after_id in order['after']:
                     if before_id in node_set and after_id in node_set:
-                        e.append(create_edge(before_id, after_id, label, 'step_step'))
+                        e.append(create_edge(before_id, after_id, label, 'step_child'))
             else:
                 if before_id in node_set and order['after'] in node_set:
-                    e.append(create_edge(before_id, order['after'], label, 'step_step'))
+                    e.append(create_edge(before_id, order['after'], label, 'step_child'))
     else:
         if isinstance(order['after'], list):
             for after_id in order['after']:
                 if order['before'] in node_set and after_id in node_set:
-                    e.append(create_edge(order['before'], after_id, label, 'step_step'))
+                    e.append(create_edge(order['before'], after_id, label, 'step_child'))
         else:
             if order['before'] in node_set and order['after'] in node_set:
-                e.append(create_edge(order['before'], order['after'], label, 'step_step'))
+                e.append(create_edge(order['before'], order['after'], label, 'step_child'))
     return e
 
 def handle_optional(_order, node_set):
@@ -146,9 +146,6 @@ def get_nodes_and_edges(schema):
     edges = []
     steps_to_connect = []
     
-    # dummy root node
-    nodes['root'] = create_node('root', 'Start', 'root', 'round-rectangle')
-    
     # root node
     _label = schema['name'].split('/')[-1].replace('_', ' ').replace('-', ' ')
     nodes[schema['@id']] = extend_node(create_node(schema['@id'], _label, 'root', 'diamond'), schema)
@@ -173,13 +170,13 @@ def get_nodes_and_edges(schema):
     # children
     if 'children' in schema:
         for child in schema['children']:
-            nodes[child['child']] = extend_node(create_node(child['child'], child['comment'], 'step', 'ellipse'), child)
+            nodes[child['child']] = extend_node(create_node(child['child'], child['comment'], 'child', 'ellipse'), child)
 
-            edges.append(create_edge(schema['@id'], child['child'], _edge_type='step_step'))
+            edges.append(create_edge(schema['@id'], child['child'], _edge_type='step_child'))
             # check for outlinks
             if len(child['outlinks']):
                 for outlink in child['outlinks']:
-                    edges.append(create_edge(child['child'], outlink, _edge_type='participant_value'))
+                    edges.append(create_edge(child['child'], outlink, _edge_type='child_outlink'))
 
     # TODO: deal with the nodes to be connected in connect
 
@@ -229,10 +226,10 @@ def get_connected_nodes(selected_node):
         # don't want the dummy root node
         # n.append(nodes[selected_node])
         for key, node in nodes.items():
-            if node['data']['_type'] in ['root', 'step']:
+            if node['data']['_type'] in ['root', 'child']:
                 n.append(node)
         for edge in edges:
-            if edge['data']['_edge_type'] in ['root_step', 'step_step', 'participant_value']:
+            if edge['data']['_edge_type'] in ['step_child', 'child_outlink']:
                 e.append(edge)
     # else:
     #     for edge in edges:

@@ -54,7 +54,7 @@ class Canvas extends React.Component {
     removeSubTree(currentSubtree) {
         const nodes = currentSubtree.nodes;
         for (let i = 0; i < nodes.length; i++) {
-            if (nodes[i].data._type !== 'step' || nodes[i].data.id === 'root') {
+            if (nodes[i].data._type !== 'child' || nodes[i].data.id === 'root') {
                 let el = this.cy.getElementById(nodes[i].data.id);
                 this.cy.remove(el);
             }

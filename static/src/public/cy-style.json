@@ -12,21 +12,15 @@
                 "text-overflow-wrap": "whitespace",
                 "text-max-width": "80vw",
                 "background-color": "white",
-                "border-color": "#777",
+                "border-color": "black",
                 "border-width": "1vw",
                 "border-style": "solid"
             }
         },
         {
-            "selector": ".schema",
-            "style": {
-                "background-color": "3d3fc6"
-            }
-        },
-        {
             "selector": "node[^_shape]",
             "style": {
-                "shape": "round-rectangle"
+                "shape": "rectangle"
             }
         },
         {
@@ -38,13 +32,19 @@
         {
             "selector": "node[_type = 'root']",
             "style": {
-                "background-color": "#3d3fc6"
+                "background-color": "#22387b"
             }
         },
         {
             "selector": "node[_type = 'participant']",
             "style": {
-                "background-color": "gray"
+                "background-color": "#bcbcbc"
+            }
+        },
+        {
+            "selector": "node[_type = 'parent']",
+            "style": {
+                "background-color": "#3d3fc6"
             }
         },
         {
@@ -54,9 +54,21 @@
             }
         },
         {
+            "selector": "node[_type = 'leaf']",
+            "style": {
+                "background-color": "#f1c232"
+            }
+        },
+        {
             "selector": "node:selected",
             "style": {
-                "background-color": "gray"
+                "background-color": "#00bfff"
+            }
+        },
+        {
+            "selector": ".optional",
+            "style": {
+                "border-style": "dotted"
             }
         },
         {

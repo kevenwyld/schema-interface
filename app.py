@@ -8,22 +8,15 @@ nodes = {}
 edges = []
 
 # TODO: be able to read quizlet 7 schema.json
-# TODO: read the first schema (Disease Outbreak with Hierarchy)
-
-# KSF version 0.8
-# schema_key_dict = {
-#     'root': ['@id', 'super', 'name', 'description', 'comment'],
-#     'step': ['@id', '@type', 'aka', 'reference', 'provenance'],
-#     'participant': ['@id', 'name', 'aka', 'role', 'entityTypes', 'comment', 'reference'],
-#     'value': ['valueId', 'value', 'entityTypes', 'mediaType', 'confidence', 'provenance'],
-#     'slot': ['@id', 'refvar', 'roleName', 'super', 'aka']
-# }
+# TODO: read the first schema of (Disease Outbreak with Hierarchy)
+    # TODO: open participant subtree
 
 # SDF version 1.2
 schema_key_dict = {
     'root': ['@id', 'name', 'description', 'comment', '@type', 'repeatable'],
     'participant': ['@id', 'roleName', 'entity'],
-    'child': ['child', 'comment', 'outlinks', 'outlink_gate', 'optional']
+    'child': ['child', 'comment', 'outlinks', 'outlink_gate', 'optional'],
+    'leaf': ['child', 'comment', 'TA1explanation', 'repeatable', 'optional']
 }
 
 def create_node(_id, _label, _type, _shape=''):
@@ -78,7 +71,10 @@ def extend_node(node, obj):
 
     for key in obj.keys():
         if key in schema_key_dict[node['data']['_type']]:
-            node['data'][key] = obj[key]
+            if key == 'optional' and obj[key]:
+                node['classes'] = 'optional'
+            else:
+                node['data'][key] = obj[key]
     return node
 
 def handle_precondition(order, node_set, label='Precondition'):
@@ -144,68 +140,69 @@ def get_nodes_and_edges(schema):
     """
     nodes = {}
     edges = []
-    steps_to_connect = []
     
-    # root node
-    _label = schema['name'].split('/')[-1].replace('_', ' ').replace('-', ' ')
-    nodes[schema['@id']] = extend_node(create_node(schema['@id'], _label, 'root', 'diamond'), schema)
-    nodes[schema['@id']]['classes'] = 'schema'
-    steps_to_connect.append(schema['@id'])
+    for scheme in schema:
+        # top node
+        _label = scheme['name'].split('/')[-1].replace('_', ' ').replace('-', ' ')
+        nodes[scheme['@id']] = extend_node(create_node(scheme['@id'], _label, 'root', 'diamond'), scheme)
+        # not root node, change node type
+        if '@type' in nodes[scheme['@id']]['data']:
+            nodes[scheme['@id']]['data']['_type'] = 'parent'
+            # not hierarchical node, change node shape
+            if 'children' not in scheme:
+                nodes[scheme['@id']]['data']['_type'] = 'child'
+                nodes[scheme['@id']]['data']['_shape'] = 'ellipse'
+        if scheme['repeatable']:
+            edges.append(create_edge(scheme['@id'], scheme['@id'], _edge_type='child_outlink'))
 
-    # not root node, add to connect list and change node type
-    if '@type' in nodes[schema['@id']]['data']:
-        steps_to_connect.append(schema['@id'])
-        # not hierarchical node, change node shape
-        if 'children' not in schema:
-            nodes[schema['@id']]['data']['_shape'] = 'ellipse'
 
-    # participants
-    if 'participants' in schema:
-        for participant in schema['participants']:
-            _label = _label = participant['roleName'].split('/')[-1].replace('_', '')
-            nodes[participant['@id']] = extend_node(create_node(participant['@id'], _label, 'participant', 'round-square'), participant)
+        # participants
+        if 'participants' in scheme:
+            for participant in scheme['participants']:
+                _label = participant['roleName'].split('/')[-1].replace('_', '')
+                nodes[participant['@id']] = extend_node(create_node(participant['@id'], _label, 'participant', 'square'), participant)
+                
+                edges.append(create_edge(scheme['@id'], participant['@id'], _edge_type='step_participant'))
 
-            edges.append(create_edge(schema['@id'], participant['@id'], _edge_type='step_participant'))
+        # children
+        if 'children' in scheme:
+            for child in scheme['children']:
+                nodes[child['child']] = extend_node(create_node(child['child'], child['comment'], 'child', 'ellipse'), child)
+                edges.append(create_edge(scheme['@id'], child['child'], _edge_type='step_child'))
+            
+                # check for outlinks
+                if len(child['outlinks']):
+                    for outlink in child['outlinks']:
+                        if outlink not in nodes:
+                            _label = outlink.split('/')[-1].replace('_', '')
+                            nodes[outlink] = create_node(outlink, _label, 'leaf', 'ellipse')
+                        edges.append(create_edge(child['child'], outlink, _edge_type='child_outlink'))
 
-    # children
-    if 'children' in schema:
-        for child in schema['children']:
-            nodes[child['child']] = extend_node(create_node(child['child'], child['comment'], 'child', 'ellipse'), child)
 
-            edges.append(create_edge(schema['@id'], child['child'], _edge_type='step_child'))
-            # check for outlinks
-            if len(child['outlinks']):
-                for outlink in child['outlinks']:
-                    edges.append(create_edge(child['child'], outlink, _edge_type='child_outlink'))
+        # TODO: and, xor gate
+        # TODO: repeatable edge
+        # TODO: optional nodes
 
-    # TODO: deal with the nodes to be connected in connect
+        # === are these two necessary? ===
+        # TODO: entities
 
-    # === are these two necessary? ===
-    # TODO: entities
+        # TODO: relations
+        # if 'relations' in schema and len(schema['relations']):
+        #     # generalize, although at the moment UIUC Q7 only has these two predicates
+        #     predicates = {'Q19267375':'proximity', 'Q6498684':'ownership'}
+        #     for relation in schema['relations']:
 
-    # TODO: relations
-    # if 'relations' in schema and len(schema['relations']):
-    #     # generalize, although at the moment UIUC Q7 only has these two predicates
-    #     predicates = {'Q19267375':'proximity', 'Q6498684':'ownership'}
-    #     for relation in schema['relations']:
-
-    # if 'entityRelations' in schema and isinstance(schema['entityRelations'], list):
-    #     for entityRelation in schema['entityRelations']:
-    #         subject = entityRelation['relationSubject']
-    #         for relation in entityRelation['relations']:
-    #             predicate = relation['relationPredicate'].split('/')[-1]
-    #             rel_object = relation['relationObject'] if isinstance(relation['relationObject'], list) else [relation['relationObject']]
-    #             for obj in rel_object:
-    #                 edges.append(create_edge(f"{subject}_{obj}", subject, obj, predicate, 'participant_participant'))
-    #                 if obj not in nodes:
-    #                     nodes[obj] = create_node(obj, obj, 'participant', 'round-pentagon')
+        # if 'entityRelations' in schema and isinstance(schema['entityRelations'], list):
+        #     for entityRelation in schema['entityRelations']:
+        #         subject = entityRelation['relationSubject']
+        #         for relation in entityRelation['relations']:
+        #             predicate = relation['relationPredicate'].split('/')[-1]
+        #             rel_object = relation['relationObject'] if isinstance(relation['relationObject'], list) else [relation['relationObject']]
+        #             for obj in rel_object:
+        #                 edges.append(create_edge(f"{subject}_{obj}", subject, obj, predicate, 'participant_participant'))
+        #                 if obj not in nodes:
+        #                     nodes[obj] = create_node(obj, obj, 'participant', 'round-pentagon')
         
-    # connects root edge to the first Start node
-    for step in steps_to_connect:
-        e = create_edge('root', step, _edge_type='root_step')
-        e['classes'] = 'root-edge'
-        edges.append(e)
-
     return nodes, edges
 
 def get_connected_nodes(selected_node):
@@ -220,36 +217,29 @@ def get_connected_nodes(selected_node):
     """
     n = []
     e = []
-    # id_set = set()
+    id_set = set()
+    for key, node in nodes.items():
+        if node['data']['_type'] == selected_node:
+            root_node = node
+            n.append(node)
+            id_set.add(node['data']['id'])
+        break
     
-    if selected_node == 'root':
-        # don't want the dummy root node
-        # n.append(nodes[selected_node])
-        for key, node in nodes.items():
-            if node['data']['_type'] in ['root', 'child']:
-                n.append(node)
-        for edge in edges:
-            if edge['data']['_edge_type'] in ['step_child', 'child_outlink']:
-                e.append(edge)
-    # else:
-    #     for edge in edges:
-    #         if (edge['data']['source'] == selected_node or edge['data']['target'] == selected_node) and edge not in e:
-    #             e.append(edge)
-    #             node = nodes[edge['data']['target']]
-    #             if node['data']['_type'] == 'participant':
-    #                 n.append(node)
-    #                 id_set.add(node['data']['id'])
-    #     # add missing edges
-    #     for edge in edges:
-    #         if edge['data']['source'] in id_set or edge['data']['target'] in id_set:
-    #             if edge not in e:
-    #                 e.append(edge)
-    #                 source_node = nodes[edge['data']['source']]
-    #                 target_node = nodes[edge['data']['target']]
-    #                 if source_node not in n:
-    #                     n.append(source_node)
-    #                 if target_node not in n:
-    #                     n.append(target_node)
+    # node children
+    for edge in edges:
+        if edge['data']['source'] == root_node['data']['id']:
+            e.append(edge)
+            n.append(nodes[edge['data']['target']])
+            id_set.add(nodes[edge['data']['target']]['data']['id'])
+    
+    # causal edges between children
+    for id in id_set:
+        if nodes[id]['data']['_type'] == 'participant':
+            continue
+        else:
+            for edge in edges:
+                if edge['data']['source'] == id and edge['data']['_edge_type'] == 'child_outlink':
+                    e.append(edge)
             
     return {
         'nodes': n,
@@ -266,19 +256,20 @@ def upload():
     schema_string = file.read().decode("utf-8")
     schemaJson = json.loads(schema_string)['events']
     # TODO: extend to all schemas, not just the first one
-    schema = schemaJson[0]
+    schema = schemaJson[:2]
     global nodes
     global edges
     nodes, edges = get_nodes_and_edges(schema)
-    schema_name = schema['name']
+    schema_name = schema[0]['name']
     parsed_schema = get_connected_nodes('root')
     return json.dumps({
         'parsedSchema': parsed_schema,
-        'name': schema['name'],
+        'name': schema_name,
         'schemaJson': schemaJson
     })
 
 @app.route('/node', methods=['GET'])
+# TODO: participants won't show up, why?
 def get_subtree():
     """Gets subtree of the selected node."""
     if not (bool(nodes) and bool(edges)):

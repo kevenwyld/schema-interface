@@ -7,15 +7,14 @@ json_string = ''
 nodes = {}
 edges = []
 
-# TODO: be able to read quizlet 7 schema.json
-# TODO: read the first schema of (Disease Outbreak with Hierarchy)
-    # TODO: open participant subtree
+# TODO: open node subtree
 
 # SDF version 1.2
 schema_key_dict = {
     'root': ['@id', 'name', 'description', 'comment', '@type', 'repeatable'],
     'participant': ['@id', 'roleName', 'entity'],
     'child': ['child', 'comment', 'outlinks', 'outlink_gate', 'optional'],
+    # temporary child copy, might not need this at all 
     'leaf': ['child', 'comment', 'TA1explanation', 'repeatable', 'optional']
 }
 
@@ -155,7 +154,6 @@ def get_nodes_and_edges(schema):
         if scheme['repeatable']:
             edges.append(create_edge(scheme['@id'], scheme['@id'], _edge_type='child_outlink'))
 
-
         # participants
         if 'participants' in scheme:
             for participant in scheme['participants']:
@@ -178,14 +176,12 @@ def get_nodes_and_edges(schema):
                             nodes[outlink] = create_node(outlink, _label, 'leaf', 'ellipse')
                         edges.append(create_edge(child['child'], outlink, _edge_type='child_outlink'))
 
-
         # TODO: and, xor gate
-        # TODO: repeatable edge
-        # TODO: optional nodes
+        # TODO: optional nodes -- the option is in the cy-style json
+            # unsure why it isn't appearing in the viewer
 
         # === are these two necessary? ===
         # TODO: entities
-
         # TODO: relations
         # if 'relations' in schema and len(schema['relations']):
         #     # generalize, although at the moment UIUC Q7 only has these two predicates
@@ -255,8 +251,7 @@ def upload():
     file = request.files['file']
     schema_string = file.read().decode("utf-8")
     schemaJson = json.loads(schema_string)['events']
-    # TODO: extend to all schemas, not just the first one
-    schema = schemaJson[:2]
+    schema = schemaJson
     global nodes
     global edges
     nodes, edges = get_nodes_and_edges(schema)
@@ -269,7 +264,7 @@ def upload():
     })
 
 @app.route('/node', methods=['GET'])
-# TODO: participants won't show up, why?
+# TODO: clicking a node does nothing; we want it to show the subtree
 def get_subtree():
     """Gets subtree of the selected node."""
     if not (bool(nodes) and bool(edges)):

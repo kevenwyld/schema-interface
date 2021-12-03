@@ -12,7 +12,7 @@
                 "text-overflow-wrap": "whitespace",
                 "text-max-width": "80vw",
                 "background-color": "white",
-                "border-color": "black",
+                "border-color": "#000000",
                 "border-width": "1vw",
                 "border-style": "solid"
             }

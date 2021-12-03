@@ -13,9 +13,7 @@ edges = []
 schema_key_dict = {
     'root': ['@id', 'name', 'description', 'comment', '@type', 'repeatable'],
     'participant': ['@id', 'roleName', 'entity'],
-    'child': ['child', 'comment', 'outlinks', 'outlink_gate', 'optional'],
-    # temporary child copy, might not need this at all 
-    'leaf': ['child', 'comment', 'TA1explanation', 'repeatable', 'optional']
+    'child': ['child', 'comment', 'outlinks', 'outlink_gate', 'optional']
 }
 
 def create_node(_id, _label, _type, _shape=''):
@@ -173,7 +171,7 @@ def get_nodes_and_edges(schema):
                     for outlink in child['outlinks']:
                         if outlink not in nodes:
                             _label = outlink.split('/')[-1].replace('_', '')
-                            nodes[outlink] = create_node(outlink, _label, 'leaf', 'ellipse')
+                            nodes[outlink] = create_node(outlink, _label, 'child', 'ellipse')
                         edges.append(create_edge(child['child'], outlink, _edge_type='child_outlink'))
 
         # TODO: and, xor gate

@@ -2,9 +2,7 @@
 
 ## Introduction
 
-This is a web tool to visualize KAIROS Schema Format generated schemas using Cytoscape.js and React.js. The tool also allows editing of these schemas for curation purpose. Current supported KSF version is **0.8**.
-
-The interface can be accessed at http://107.178.212.18/.
+This is a web tool to visualize KAIROS Schema Format generated schemas using Cytoscape.js and React.js. The tool also allows editing of these schemas for curation purpose. Current supported SDF version is **1.2**.
 
 **This project is currently a work in progress and is in alpha testing. Feedbacks and suggestions are welcome.**
 

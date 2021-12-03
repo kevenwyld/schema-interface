@@ -224,19 +224,21 @@ def get_connected_nodes(selected_node):
     # node children
     for edge in edges:
         if edge['data']['source'] == root_node['data']['id']:
+            node = nodes[edge['data']['target']]
+            if selected_node == 'root' and node['data']['_type'] == 'participant':
+                continue
             e.append(edge)
             n.append(nodes[edge['data']['target']])
             id_set.add(nodes[edge['data']['target']]['data']['id'])
     
     # causal edges between children
     for id in id_set:
-        if nodes[id]['data']['_type'] == 'participant':
-            continue
-        else:
-            for edge in edges:
-                if edge['data']['source'] == id and edge['data']['_edge_type'] == 'child_outlink':
-                    e.append(edge)
+        for edge in edges:
+            if edge['data']['source'] == id and edge['data']['_edge_type'] == 'child_outlink':
+                e.append(edge)
             
+    
+
     return {
         'nodes': n,
         'edges': e

@@ -212,12 +212,16 @@ def get_connected_nodes(selected_node):
     n = []
     e = []
     id_set = set()
-    for _, node in nodes.items():
-        if node['data']['_type'] == selected_node:
-            root_node = node
-            n.append(node)
-            id_set.add(node['data']['id'])
-        break
+    
+    if selected_node == 'root':
+        for _, node in nodes.items():
+            if node['data']['_type'] == selected_node:
+                root_node = node
+                n.append(node)
+                id_set.add(node['data']['id'])
+                break
+    else:
+        root_node = nodes[selected_node]
     
     # node children
     for edge in edges:
@@ -263,7 +267,6 @@ def upload():
     })
 
 @app.route('/node', methods=['GET'])
-# TODO: clicking a node does nothing; we want it to show the subtree
 def get_subtree():
     """Gets subtree of the selected node."""
     if not (bool(nodes) and bool(edges)):

@@ -89,62 +89,27 @@ class Canvas extends React.Component {
     componentDidMount() {
         console.log('mounted')
         this.cy.ready(() => {
-            console.log('ready')
+            // left-click 
             this.cy.on('tap', event => {
-                console.log('target:', event.target)
                 var eventTarget = event.target;
+                // click background, reset canvas
                 if (eventTarget === this.cy) {
-                    console.log('tap on background');
-                    if (!isNull(this.state.currentSubtree)){
-                            this.removeSubTree(this.state.currentSubtree);
-                        }
+                    this.reloadCanvas();
+                // click node, show subtree
                 } else if (eventTarget.isNode()) {
-                    console.log('tap on node');
                     let node = eventTarget.data();
                     this.showSubTree(node);
-                } else {
-                    console.log('tap on edge');
-                    if (!isNull(this.state.currentSubtree)){
-                        this.removeSubTree(this.state.currentSubtree);
-                    }
                 }
-                // if (evtTarget === cy) {
-                //     if (!isNull(this.state.currentSubtree)){
-                //             this.removeSubTree(this.state.currentSubtree);
-                //         } 
-                // }
-                // else if (evtTarget.isNode()){
-                //     console.log('tap on Node')
-                //     let node = event.target.data();
-                //     this.showSubTree(node);
-                // }
-                // else{
-                //     if (!isNull(this.state.currentSubtree)){
-                //         this.removeSubTree(this.state.currentSubtree);
-                //     }
-                // }
             });
-            // this.cy.on('tap', event => {
-            //     console.log("target:", event.target, " and group:", event.target.group );
-            //     if (event.target.group && event.target.group() === 'nodes') {
-            //         let node = event.target.data();
-            //         // if (node._type === 'leaf') {
-            //         //     this.cy.getElementById(node.id).unselect();
-            //         // } else {
-            //         this.showSubTree(node);
-            //         // }
-            //     } else {
-            //         if (!isNull(this.state.currentSubtree)) {
-            //             this.removeSubTree(this.state.currentSubtree);
-            //         }
-            //     }
-            // })
 
+            // right-click
             this.cy.on('cxttap', event => {
+                // collapse sidebar
                 if (Object.keys(event.target.data()).length === 0) {
                     this.cy.resize();
                     this.runLayout();
                 }
+                // show information of node
                 this.props.sidebarCallback(event.target.data());
             })
         })

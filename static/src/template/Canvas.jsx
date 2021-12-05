@@ -10,6 +10,7 @@ import RefreshIcon from '@material-ui/icons/Refresh';
 
 import Background from '../public/canvas_bg.png';
 import CyStyle from '../public/cy-style.json';
+import { get } from 'lodash';
 
 cytoscape.use(klay)
 
@@ -52,15 +53,16 @@ class Canvas extends React.Component {
     }
 
     removeSubTree(currentSubtree) {
-        const nodes = currentSubtree.nodes;
-        for (let i = 0; i < nodes.length; i++) {
-            if (nodes[i].data._type !== 'child' || nodes[i].data.id === 'root') {
-                let el = this.cy.getElementById(nodes[i].data.id);
-                this.cy.remove(el);
-            }
-        }
-        this.runLayout();
-        this.setState({currentSubtree: null});
+        this.reloadCanvas();
+        // const nodes = currentSubtree.nodes;
+        // for (let i = 0; i < nodes.length; i++) {
+        //     if (nodes[i].data._type == 'child' || nodes[i].data.id === 'root') {
+        //         let el = this.cy.getElementById(nodes[i].data.id);
+        //         this.cy.remove(el);
+        //     }
+        // }
+        // this.runLayout();
+        // this.setState({currentSubtree: null});
     }
 
     runLayout() {
@@ -83,21 +85,58 @@ class Canvas extends React.Component {
     }
 
     componentDidMount() {
+        console.log('mounted')
         this.cy.ready(() => {
+            console.log('ready')
             this.cy.on('tap', event => {
-                if (event.target.group && event.target.group() === 'nodes') {
-                    let node = event.target.data();
-                    if (node._type !== 'step') {
-                        this.cy.getElementById(node.id).unselect();
-                    } else {
-                        this.showSubTree(node);
-                    }
+                console.log('target:', event.target)
+                var eventTarget = event.target;
+                if (eventTarget === this.cy) {
+                    console.log('tap on background');
+                    if (!isNull(this.state.currentSubtree)){
+                            this.removeSubTree(this.state.currentSubtree);
+                        }
+                } else if (eventTarget.isNode()) {
+                    console.log('tap on node');
+                    let node = eventTarget.data();
+                    this.showSubTree(node);
                 } else {
-                    if (!isNull(this.state.currentSubtree)) {
+                    console.log('tap on edge');
+                    if (!isNull(this.state.currentSubtree)){
                         this.removeSubTree(this.state.currentSubtree);
                     }
                 }
-            })
+                // if (evtTarget === cy) {
+                //     if (!isNull(this.state.currentSubtree)){
+                //             this.removeSubTree(this.state.currentSubtree);
+                //         } 
+                // }
+                // else if (evtTarget.isNode()){
+                //     console.log('tap on Node')
+                //     let node = event.target.data();
+                //     this.showSubTree(node);
+                // }
+                // else{
+                //     if (!isNull(this.state.currentSubtree)){
+                //         this.removeSubTree(this.state.currentSubtree);
+                //     }
+                // }
+            });
+            // this.cy.on('tap', event => {
+            //     console.log("target:", event.target, " and group:", event.target.group );
+            //     if (event.target.group && event.target.group() === 'nodes') {
+            //         let node = event.target.data();
+            //         // if (node._type === 'leaf') {
+            //         //     this.cy.getElementById(node.id).unselect();
+            //         // } else {
+            //         this.showSubTree(node);
+            //         // }
+            //     } else {
+            //         if (!isNull(this.state.currentSubtree)) {
+            //             this.removeSubTree(this.state.currentSubtree);
+            //         }
+            //     }
+            // })
 
             this.cy.on('cxttap', event => {
                 if (Object.keys(event.target.data()).length === 0) {

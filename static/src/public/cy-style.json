@@ -54,12 +54,6 @@
             }
         },
         {
-            "selector": "node[_type = 'leaf']",
-            "style": {
-                "background-color": "#f1c232"
-            }
-        },
-        {
             "selector": "node:selected",
             "style": {
                 "background-color": "#00bfff"

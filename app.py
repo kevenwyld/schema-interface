@@ -2,19 +2,15 @@ from flask import Flask, render_template, request
 import json
 
 app = Flask(__name__, static_folder='./static', template_folder='./static')
-json_string = ''
 
 nodes = {}
 edges = []
 
-# TODO: some subtrees can't be opened; why? error: non-existent target
-# TODO: update schema key dict to include pertinent information
-
 # SDF version 1.2
 schema_key_dict = {
-    'root': ['@id', 'name', 'description', 'comment', '@type', 'repeatable', 'TA1explanation'],
+    'root': ['@id', 'name', 'description', 'comment', 'qnode', '@type', 'minDuration', 'maxDuration', 'repeatable', 'TA1explanation', 'importance', 'qlabel'],
     'participant': ['@id', 'roleName', 'entity'],
-    'child': ['child', 'comment', 'outlinks', 'outlink_gate', 'optional']
+    'child': ['child', 'comment', 'optional', 'importance', 'outlinks', 'outlink_gate', ]
 }
 
 def create_node(_id, _label, _type, _shape=''):
@@ -177,9 +173,9 @@ def get_nodes_and_edges(schema):
 
         # TODO: and, xor gate
         # TODO: optional nodes -- the option is in the cy-style json
-            # unsure why it isn't appearing in the viewer
+            # bug? it doesn't show up on parent node
 
-        # === are these two necessary? ===
+        # === are these two necessary? / what are these for ===
         # TODO: entities
         # TODO: relations
         # if 'relations' in schema and len(schema['relations']):

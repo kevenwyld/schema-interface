@@ -7,7 +7,8 @@ json_string = ''
 nodes = {}
 edges = []
 
-# TODO: open node subtree
+# TODO: some subtrees can't be opened; why? error: non-existent target
+# TODO: update schema key dict to include pertinent information
 
 # SDF version 1.2
 schema_key_dict = {

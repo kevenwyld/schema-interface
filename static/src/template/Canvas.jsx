@@ -14,6 +14,8 @@ import { get } from 'lodash';
 
 cytoscape.use(klay)
 
+// TODO : update subtree to be able to click nodes in subtrees
+
 class Canvas extends React.Component {
     constructor(props) {
         super(props);

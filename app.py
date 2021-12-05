@@ -212,7 +212,7 @@ def get_connected_nodes(selected_node):
     n = []
     e = []
     id_set = set()
-    for key, node in nodes.items():
+    for _, node in nodes.items():
         if node['data']['_type'] == selected_node:
             root_node = node
             n.append(node)
@@ -223,6 +223,7 @@ def get_connected_nodes(selected_node):
     for edge in edges:
         if edge['data']['source'] == root_node['data']['id']:
             node = nodes[edge['data']['target']]
+            # skip participant edges
             if selected_node == 'root' and node['data']['_type'] == 'participant':
                 continue
             e.append(edge)
@@ -234,8 +235,6 @@ def get_connected_nodes(selected_node):
         for edge in edges:
             if edge['data']['source'] == id and edge['data']['_edge_type'] == 'child_outlink':
                 e.append(edge)
-            
-    
 
     return {
         'nodes': n,
@@ -278,14 +277,14 @@ def reload_schema():
     """Reloads schema; does the same thing as upload."""
     schema_string = request.data.decode("utf-8")
     schemaJson = json.loads(schema_string)
-    schema = schemaJson[0]
+    schema = schemaJson
     global nodes
     global edges
     nodes, edges = get_nodes_and_edges(schema)
-    schema_name = schema['name']
+    schema_name = schema[0]['name']
     parsed_schema = get_connected_nodes('root')
     return json.dumps({
         'parsedSchema': parsed_schema,
-        'name': schema['name'],
+        'name': schema_name,
         'schemaJson': schemaJson
     })

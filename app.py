@@ -12,7 +12,7 @@ edges = []
 
 # SDF version 1.2
 schema_key_dict = {
-    'root': ['@id', 'name', 'description', 'comment', '@type', 'repeatable'],
+    'root': ['@id', 'name', 'description', 'comment', '@type', 'repeatable', 'TA1explanation'],
     'participant': ['@id', 'roleName', 'entity'],
     'child': ['child', 'comment', 'outlinks', 'outlink_gate', 'optional']
 }
@@ -239,6 +239,9 @@ def get_connected_nodes(selected_node):
     for id in id_set:
         for edge in edges:
             if edge['data']['source'] == id and edge['data']['_edge_type'] == 'child_outlink':
+                # check if node was created previously
+                if edge['data']['target'] not in id_set:
+                    n.append(nodes[edge['data']['target']])
                 e.append(edge)
 
     return {

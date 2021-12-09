@@ -2,9 +2,7 @@
 
 ## Introduction
 
-This is a web tool to visualize KAIROS Schema Format generated schemas using Cytoscape.js and React.js. The tool also allows editing of these schemas for curation purpose. Current supported KSF version is **0.8**.
-
-The interface can be accessed at http://107.178.212.18/.
+This is a web tool to visualize KAIROS Schema Format generated schemas using Cytoscape.js and React.js. The tool also allows editing of these schemas for curation purpose. Current supported SDF version is **1.2**.
 
 **This project is currently a work in progress and is in alpha testing. Feedbacks and suggestions are welcome.**
 
@@ -39,15 +37,16 @@ The tool mainly uses 3 resources:
 
 ## Usage
 
-Currently the tool has 4 sections, namely Home, Viewer, Compare, Github. Out of the 4, only the viewer has been implemented. It provides following features.
+Currently the tool has 4 sections, namely Home, Viewer, Compare, Github. GitHub links to this repository.
 
+### Viewer
 * An **Upload Schema** button that opens a modal to upload file from the local file system.
-* A **Canvas** where the schema is represented. The canvas allows one to zoom-in and zoom-out, move one node at a time and move the entire structure. There is a **reload** icon on the top right corner of the canvas that resets the graph to its original position.
-* A **JSON viewer** that gives the json view of the schema. This viewer allows editing of the schema which in turn updates the graph. The viewer allows 4 main funtionality.
+* A **Canvas** where the schema is represented. The canvas allows one to zoom-in and zoom-out, move one node at a time and move the entire structure. There is a **reload** icon on the top right corner of the canvas that resets the graph to its original position. Nodes can be clicked to show subtrees of children and participants.
+* A **JSON viewer** that gives the json view of the schema. This viewer allows editing of the schema which in turn updates the graph. The viewer allows 4 main funtionalities.
   * **Copy**: A "Copy-to-Clipboard" icon shows up on every object of the json structure which allows one to copy the entire value. For object, number and string, it copies the value assigned to the property. For arrays, it copies all the entries in the list.
   * **Add**: A "+" icon signifies adding an entry. Within objects, it expects a key and initialize it with "NULL" which can then be edited to the required value. In arrays, it expects a value in the form of an object or a string.
   * **Edit**: Selecting "notepad-with-pen" icon allows editing the value of the respective key. This option is missing in arrays.
   * **Delete**: Clicking on "X" icon will delete that entry in the object. Using it in array will remove the entire object and reduce the length of the list by 1.
   
   For an interactive [demo](https://mac-s-g.github.io/react-json-view/demo/dist/).
-* A **SideBar** opens up on the left side of the canvas giving information about the selected node. This window opens only when a node is right-clicked. It gives the details about the nodes like name, id, role, entityTypes, comments, provenance, confidence etc. These information will only be visible if they are mentioned in the schema.
+* A **SideBar** opens up on the left side of the canvas giving information about the selected node. This window opens only when a node is right-clicked. It gives the details about the nodes like name, id, description, comments, explanation from TA1, importance etc. These information will only be visible if they are mentioned in the schema.

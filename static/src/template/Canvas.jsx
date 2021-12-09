@@ -4,7 +4,6 @@ import cytoscape from 'cytoscape';
 import klay from 'cytoscape-klay';
 
 import axios from 'axios';
-import isNull from 'lodash/isNull';
 import equal from 'fast-deep-equal';
 import RefreshIcon from '@material-ui/icons/Refresh';
 
@@ -18,8 +17,17 @@ class Canvas extends React.Component {
         super(props);
         this.state = {
             canvasElements: CytoscapeComponent.normalizeElements(this.props.elements),
-            currentSubtree: null
+            hasSubtree: false,
+            // static copy of topmost tree
+            topTree: null
         }
+
+        // create topTree
+        var treeData = []
+        for (var {data:d} of this.state.canvasElements){
+            treeData.push(d);
+        };
+        this.state.topTree = treeData;
 
         this.showSidebar = this.showSidebar.bind(this);
         this.showSubTree = this.showSubTree.bind(this);
@@ -39,10 +47,10 @@ class Canvas extends React.Component {
               }
             })
             .then(res => {
-                if (!isNull(this.state.currentSubtree) && this.state.currentSubtree !== res.data) {
-                    this.removeSubTree(this.state.currentSubtree);
+                if (this.state.hasSubtree && this.state.topTree.includes(node)) {
+                    this.removeSubTree();
                 }
-                this.setState({currentSubtree: res.data});
+                this.setState({hasSubtree: true});
                 this.cy.add(res.data);
                 this.runLayout();
             })
@@ -51,16 +59,9 @@ class Canvas extends React.Component {
             })
     }
 
-    removeSubTree(currentSubtree) {
-        const nodes = currentSubtree.nodes;
-        for (let i = 0; i < nodes.length; i++) {
-            if (nodes[i].data._type !== 'step' || nodes[i].data.id === 'root') {
-                let el = this.cy.getElementById(nodes[i].data.id);
-                this.cy.remove(el);
-            }
-        }
-        this.runLayout();
-        this.setState({currentSubtree: null});
+    removeSubTree() {
+        this.reloadCanvas();
+        this.setState({hasSubtree: false});
     }
 
     runLayout() {
@@ -75,7 +76,8 @@ class Canvas extends React.Component {
     reloadCanvas() {
         this.setState({
             canvasElements: CytoscapeComponent.normalizeElements(this.props.elements),
-            currentSubtree: null
+            hasSubtree: false,
+            showParticipants: true
         });
         this.cy.elements().remove(); 
         this.cy.add( this.state.canvasElements );
@@ -84,26 +86,27 @@ class Canvas extends React.Component {
 
     componentDidMount() {
         this.cy.ready(() => {
+            // left-click 
             this.cy.on('tap', event => {
-                if (event.target.group && event.target.group() === 'nodes') {
-                    let node = event.target.data();
-                    if (node._type !== 'step') {
-                        this.cy.getElementById(node.id).unselect();
-                    } else {
-                        this.showSubTree(node);
-                    }
-                } else {
-                    if (!isNull(this.state.currentSubtree)) {
-                        this.removeSubTree(this.state.currentSubtree);
-                    }
+                var eventTarget = event.target;
+                // click background, reset canvas
+                if (eventTarget === this.cy) {
+                    this.reloadCanvas();
+                // click node, show subtree
+                } else if (eventTarget.isNode()) {
+                    let node = eventTarget.data();
+                    this.showSubTree(node);
                 }
-            })
+            });
 
+            // right-click
             this.cy.on('cxttap', event => {
+                // collapse sidebar
                 if (Object.keys(event.target.data()).length === 0) {
                     this.cy.resize();
                     this.runLayout();
                 }
+                // show information of node
                 this.props.sidebarCallback(event.target.data());
             })
         })

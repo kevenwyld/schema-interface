@@ -6,15 +6,13 @@
                 "content": "data(_label)",
                 "shape": "data(_shape)",
                 "width": "90vw",
-                "text-valign": "center",
-                "text-halign": "center",
                 "font-size": "10vh",
                 "font-weight": "bold",
                 "text-wrap": "wrap",
                 "text-overflow-wrap": "whitespace",
                 "text-max-width": "80vw",
                 "background-color": "white",
-                "border-color": "#777",
+                "border-color": "#000000",
                 "border-width": "1vw",
                 "border-style": "solid"
             }
@@ -22,7 +20,7 @@
         {
             "selector": "node[^_shape]",
             "style": {
-                "shape": "round-rectangle"
+                "shape": "rectangle"
             }
         },
         {
@@ -32,44 +30,39 @@
             }
         },
         {
-            "selector": "node[id = 'root']",
+            "selector": "node[_type = 'root']",
             "style": {
-                "background-color": "#eeeeee"
+                "background-color": "#22387b"
             }
         },
         {
             "selector": "node[_type = 'participant']",
             "style": {
-                "background-color": "#f8d8be",
-                "text-valign": "center",
-                "text-halign": "center"
+                "background-color": "#bcbcbc"
             }
         },
         {
-            "selector": "node[_type = 'step']",
+            "selector": "node[_type = 'parent']",
             "style": {
-                "background-color": "#c7ebe6",
-                "text-valign": "center",
-                "text-halign": "center"
+                "background-color": "#3d3fc6"
             }
         },
         {
-            "selector": "node:parent",
+            "selector": "node[_type = 'child']",
             "style": {
-                "text-valign": "top",
-                "text-halign": "center"
+                "background-color": "#f1c232"
             }
         },
         {
             "selector": "node:selected",
             "style": {
-                "background-color": "gray"
+                "background-color": "#00bfff"
             }
         },
         {
-            "selector": ".overlapped",
+            "selector": ".optional",
             "style": {
-                "border-color": "#a7bf37"
+                "border-style": "dotted"
             }
         },
         {
@@ -79,42 +72,33 @@
                 "font-size": "12vh",
                 "curve-style": "bezier",
                 "target-arrow-shape": "triangle",
+                "target-arrow-color": "#000000",
                 "line-style": "solid",
                 "edge-text-rotation": "autorotate"
             }
         },
         {
-            "selector": ".root-edge",
+            "selector": "edge[_edge_type = 'step_child']",
             "style": {
-                "line-color": "#dadad7"
-            }
-        },
-        {
-            "selector": "edge[_edge_type = 'step_step']",
-            "style": {
-                "line-color": "#dadad7",
-                "width": "3vw"
+                "line-color": "#189ad3",
+                "target-arrow-shape": "none",
+                "width": "1vw"
             }
         },
         {
             "selector": "edge[_edge_type = 'step_participant']",
             "style": {
-                "line-color": "#000080",
+                "target-arrow-color": "#777",
+                "line-color": "#777",
+                "line-style": "dashed",
                 "width": "2vw"
             }
         },
         {
-            "selector": "edge[_edge_type = 'participant_value']",
+            "selector": "edge[_edge_type = 'child_outlink']",
             "style": {
-                "line-color": "#000080",
-                "width": "1vw"
-            }
-        },
-        {
-            "selector": "edge[_edge_type = 'participant_etype']",
-            "style": {
-                "line-color": "#000080",
-                "width": "1vw"
+                "line-color": "#000000",
+                "width": "2vw"
             }
         },
         {
@@ -139,29 +123,29 @@
         "animate": false,
         "animationDuration": 500,
         "klay": {
-          "addUnnecessaryBendpoints": false,
-          "aspectRatio": 1.6,
-          "borderSpacing": 20,
-          "compactComponents": false,
-          "crossingMinimization": "LAYER_SWEEP",
-          "cycleBreaking": "GREEDY",
-          "direction": "RIGHT",
-          "edgeRouting": "SPLINES",
-          "edgeSpacingFactor": 0.7,
-          "feedbackEdges": false,
-          "fixedAlignment": "NONE",
-          "inLayerSpacingFactor": 4,
-          "layoutHierarchy": true,
-          "linearSegmentsDeflectionDampening": 0.3,
-          "mergeEdges": false,
-          "mergeHierarchyCrossingEdges": true,
-          "nodeLayering": "NETWORK_SIMPLEX",
-          "nodePlacement": "LINEAR_SEGMENTS",
-          "randomizationSeed": 10,
-          "routeSelfLoopInside": false,
-          "separateConnectedComponents": true,
-          "spacing": 20,
-          "thoroughness": 20
+            "addUnnecessaryBendpoints": false,
+            "aspectRatio": 1.6,
+            "borderSpacing": 20,
+            "compactComponents": false,
+            "crossingMinimization": "LAYER_SWEEP",
+            "cycleBreaking": "GREEDY",
+            "direction": "RIGHT",
+            "edgeRouting": "SPLINES",
+            "edgeSpacingFactor": 0.7,
+            "feedbackEdges": false,
+            "fixedAlignment": "NONE",
+            "inLayerSpacingFactor": 4,
+            "layoutHierarchy": true,
+            "linearSegmentsDeflectionDampening": 0.3,
+            "mergeEdges": false,
+            "mergeHierarchyCrossingEdges": true,
+            "nodeLayering": "NETWORK_SIMPLEX",
+            "nodePlacement": "LINEAR_SEGMENTS",
+            "randomizationSeed": 10,
+            "routeSelfLoopInside": false,
+            "separateConnectedComponents": true,
+            "spacing": 20,
+            "thoroughness": 20
         }
     }
 }

@@ -6,6 +6,9 @@ app = Flask(__name__, static_folder='./static', template_folder='./static')
 nodes = {}
 edges = []
 
+# TODO: look through SDF version documentation to decide what should be in the schema_key_dict
+# TODO: move support to SDF version 1.3
+
 # SDF version 1.2
 schema_key_dict = {
     'root': ['@id', 'name', 'description', 'comment', 'qnode', '@type', 'minDuration', 'maxDuration', 'repeatable', 'TA1explanation', 'importance', 'qlabel'],
@@ -174,6 +177,7 @@ def get_nodes_and_edges(schema):
         # TODO: and, xor gate
         # TODO: optional nodes -- the option is in the cy-style json
             # bug? it doesn't show up on parent node
+            # found: parent node does not have optional key and overwrites child node keys
 
         # === are these two necessary? / what are these for ===
         # TODO: entities

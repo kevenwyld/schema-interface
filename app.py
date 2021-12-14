@@ -6,14 +6,14 @@ app = Flask(__name__, static_folder='./static', template_folder='./static')
 nodes = {}
 edges = []
 
-# TODO: look through SDF version documentation to decide what should be in the schema_key_dict
-# TODO: move support to SDF version 1.3
-
-# SDF version 1.2
+# SDF version 1.3
 schema_key_dict = {
-    'root': ['@id', 'name', 'description', 'comment', 'qnode', '@type', 'minDuration', 'maxDuration', 'repeatable', 'TA1explanation', 'importance', 'qlabel'],
+    'root': ['@id', 'name', 'comment', 'description', 'aka', 'qnode', 'qlabel', 'minDuration',
+             'maxDuration', 'goal', 'ta1explanation', 'importance', 'children_gate'],
+             # TODO: handle xor children_gates
     'participant': ['@id', 'roleName', 'entity'],
-    'child': ['child', 'comment', 'optional', 'importance', 'outlinks', 'outlink_gate', ]
+    'child': ['child', 'comment', 'optional', 'importance', 'outlinks', 'outlink_gate'],
+    'privateData': ['@type', 'template', 'repeatable', 'importance']
 }
 
 def create_node(_id, _label, _type, _shape=''):
@@ -72,57 +72,11 @@ def extend_node(node, obj):
                 node['classes'] = 'optional'
             else:
                 node['data'][key] = obj[key]
+    if 'privateData' in obj.keys():
+        for key in obj['privateData'].keys():
+            if key in schema_key_dict['privateData']:
+                node['data'][key] = obj['privateData'][key]
     return node
-
-def handle_precondition(order, node_set, label='Precondition'):
-    """Adds edges between multiple previous and next nodes.
-    
-    Parameters:
-    order (dict): links to "before" and "after" nodes
-    node_set (dict): nodes to be linked
-    label (str): shows order on graph
-
-    """
-    e = []
-    if isinstance(order['before'], list):
-        for before_id in order['before']:
-            if isinstance(order['after'], list):
-                for after_id in order['after']:
-                    if before_id in node_set and after_id in node_set:
-                        e.append(create_edge(before_id, after_id, label, 'step_child'))
-            else:
-                if before_id in node_set and order['after'] in node_set:
-                    e.append(create_edge(before_id, order['after'], label, 'step_child'))
-    else:
-        if isinstance(order['after'], list):
-            for after_id in order['after']:
-                if order['before'] in node_set and after_id in node_set:
-                    e.append(create_edge(order['before'], after_id, label, 'step_child'))
-        else:
-            if order['before'] in node_set and order['after'] in node_set:
-                e.append(create_edge(order['before'], order['after'], label, 'step_child'))
-    return e
-
-def handle_optional(_order, node_set):
-    """Calls handle_precondition with thet optional label.
-    
-    """
-    return handle_precondition(_order, node_set, 'Optional')
-
-def handle_flags(_flag, _order, node_set):
-    """Calls handle_precondition or handle_optional based on flag.
-
-    Parameters:
-    _flag (str): flag raised in order dictionary
-    _node_set (dict): set of nodes to be handled
-    
-    """
-    switcher={
-        'precondition': handle_precondition,
-        'optional': handle_optional
-    }
-    func = switcher.get(_flag.lower(), lambda *args: None)
-    return func(_order, node_set)
 
 def get_nodes_and_edges(schema):
     """Creates lists of nodes and edges, through references and relations.
@@ -137,20 +91,45 @@ def get_nodes_and_edges(schema):
     """
     nodes = {}
     edges = []
+    containers = []
+    first_run = True
     
     for scheme in schema:
-        # top node
+        # create event node
         _label = scheme['name'].split('/')[-1].replace('_', ' ').replace('-', ' ')
-        nodes[scheme['@id']] = extend_node(create_node(scheme['@id'], _label, 'root', 'diamond'), scheme)
-        # not root node, change node type
-        if '@type' in nodes[scheme['@id']]['data']:
-            nodes[scheme['@id']]['data']['_type'] = 'parent'
-            # not hierarchical node, change node shape
+        scheme_id = scheme['@id']
+        # node already exists
+        if scheme_id in nodes:
+            # add information
+            nodes[scheme_id]['data']['_type'] = 'root'
+            nodes[scheme_id]['data']['_label'] = _label
+            nodes[scheme_id] = extend_node(nodes[scheme_id], scheme)
+            # change type back
             if 'children' not in scheme:
-                nodes[scheme['@id']]['data']['_type'] = 'child'
-                nodes[scheme['@id']]['data']['_shape'] = 'ellipse'
-        if scheme['repeatable']:
-            edges.append(create_edge(scheme['@id'], scheme['@id'], _edge_type='child_outlink'))
+                nodes[scheme_id]['data']['_type'] = 'child'
+            elif 'outlinks' in nodes[scheme_id]['data']['name']:
+                nodes[scheme_id]['data']['_type'] = 'container'
+                containers.append(scheme_id)
+            else:
+                nodes[scheme_id]['data']['_type'] = 'parent'
+                nodes[scheme_id]['data']['_shape'] = 'diamond'
+        # new node
+        else:
+            nodes[scheme_id] = extend_node(create_node(scheme_id, _label, 'root', 'diamond'), scheme)
+
+        if first_run:
+            first_run = False
+        else:
+            # not root node, change node type
+            nodes[scheme_id]['data']['_type'] = 'parent'
+            nodes[scheme_id]['data']['_shape'] = 'diamond'
+        # not hierarchical node, change node shape
+        if 'children' not in scheme:
+            nodes[scheme_id]['data']['_type'] = 'child'
+            nodes[scheme_id]['data']['_shape'] = 'ellipse'
+        # handle repeatable
+        if nodes[scheme_id]['data']['repeatable']:
+            edges.append(create_edge(scheme_id, scheme_id, _edge_type='child_outlink'))
 
         # participants
         if 'participants' in scheme:
@@ -158,13 +137,23 @@ def get_nodes_and_edges(schema):
                 _label = participant['roleName'].split('/')[-1].replace('_', '')
                 nodes[participant['@id']] = extend_node(create_node(participant['@id'], _label, 'participant', 'square'), participant)
                 
-                edges.append(create_edge(scheme['@id'], participant['@id'], _edge_type='step_participant'))
+                edges.append(create_edge(scheme_id, participant['@id'], _edge_type='step_participant'))
 
         # children
         if 'children' in scheme:
             for child in scheme['children']:
-                nodes[child['child']] = extend_node(create_node(child['child'], child['comment'], 'child', 'ellipse'), child)
-                edges.append(create_edge(scheme['@id'], child['child'], _edge_type='step_child'))
+
+                child_id = child['child']
+                # node already exists
+                if child_id in nodes:
+                    prev_type = nodes[child_id]['data']['_type']
+                    nodes[child_id]['data']['_type'] = 'child'
+                    nodes[child_id] = extend_node(nodes[child_id], child)
+                    nodes[child_id]['data']['_type'] = prev_type
+                # new node
+                else:                    
+                    nodes[child_id] = extend_node(create_node(child_id, child['comment'], 'child', 'ellipse'), child)
+                edges.append(create_edge(scheme_id, child_id, _edge_type='step_child'))
             
                 # check for outlinks
                 if len(child['outlinks']):
@@ -172,12 +161,26 @@ def get_nodes_and_edges(schema):
                         if outlink not in nodes:
                             _label = outlink.split('/')[-1].replace('_', '')
                             nodes[outlink] = create_node(outlink, _label, 'child', 'ellipse')
-                        edges.append(create_edge(child['child'], outlink, _edge_type='child_outlink'))
+                        edges.append(create_edge(child_id, outlink, _edge_type='child_outlink'))
 
-        # TODO: and, xor gate
-        # TODO: optional nodes -- the option is in the cy-style json
-            # bug? it doesn't show up on parent node
-            # found: parent node does not have optional key and overwrites child node keys
+        # handle containers, ie. connect previous node to all their successors
+        edges_to_remove = []
+        for container in containers:
+            for edge in edges:
+                if 'searched' in edge['data'] and edge['data']['searched']:
+                    continue
+                if edge['data']['target'] == container:
+                    source_id = edge['data']['source']
+                    nodes[source_id]['data']['children_gate'] = nodes[container]['data']['children_gate']
+                    edges_to_remove.append(edge)
+                    edge['data']['searched'] = True
+                if edge['data']['source'] == container:
+                    edges.append(create_edge(source_id, edge['data']['target'], _edge_type='step_child'))
+                    edges_to_remove.append(edge)
+                    edge['data']['searched'] = True
+
+        for index in edges_to_remove:
+            edges.remove(index)
 
         # === are these two necessary? / what are these for ===
         # TODO: entities

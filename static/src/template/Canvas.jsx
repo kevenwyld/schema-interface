@@ -107,7 +107,8 @@ class Canvas extends React.Component {
                     this.runLayout();
                 }
                 // show information of node
-                this.props.sidebarCallback(event.target.data());
+                console.log(event.target.data());
+                this.showSidebar(event.target.data());
             })
         })
     }

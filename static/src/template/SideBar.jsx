@@ -19,9 +19,7 @@ function SideBar (props) {
                 <List disablePadding dense>
                     {Object.entries(props.data).map(([key, val]) => {
                         if (!excluded_ids.includes(key)) {
-                            if (Array.isArray(val)) {
-                                val = val.join(' ')
-                            }
+                            val = val.toString()
 
                             return (
                                 <div key={++i}>

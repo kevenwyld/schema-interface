@@ -13,7 +13,7 @@ class Viewer extends Component {
         this.state = {
             schemaResponse: '',
             schemaName: '',
-            schmeaJson: '',
+            schemaJson: '',
             isOpen: false,
             nodeData: {}
         }

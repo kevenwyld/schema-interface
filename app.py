@@ -185,10 +185,6 @@ def get_nodes_and_edges(schema):
         # === are these two necessary? / what are these for ===
         # TODO: entities
         # TODO: relations
-        # if 'relations' in schema and len(schema['relations']):
-        #     # generalize, although at the moment UIUC Q7 only has these two predicates
-        #     predicates = {'Q19267375':'proximity', 'Q6498684':'ownership'}
-        #     for relation in schema['relations']:
 
         # if 'entityRelations' in schema and isinstance(schema['entityRelations'], list):
         #     for entityRelation in schema['entityRelations']:

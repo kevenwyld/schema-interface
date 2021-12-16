@@ -15,6 +15,11 @@ import CyStyle from '../public/cy-style.json';
 
 
 // TODO: add right-click menu
+// TODO: top-level task: make a more user-friendly editor
+    // TODO: add blocks of JSON based off of type of JSON
+        // scheme
+        // participant
+        // child
 cytoscape.use(klay)
 
 class Canvas extends React.Component {

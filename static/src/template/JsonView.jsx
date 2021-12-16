@@ -6,11 +6,6 @@ import some from 'lodash/some';
 import isArray from 'lodash/isArray';
 import isObject from 'lodash/isObject';
 
-// TODO: top-level task: make a more user-friendly editor
-    // TODO: add blocks of JSON based off of type of JSON
-        // scheme
-        // participant
-        // child
 class JsonView extends Component {
     /*
     Handles the Json viewer and editor.

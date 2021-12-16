@@ -10,6 +10,11 @@ import RefreshIcon from '@material-ui/icons/Refresh';
 import Background from '../public/canvas_bg.png';
 import CyStyle from '../public/cy-style.json';
 
+/* Graph view of the data.
+   Includes reload button. */
+
+
+// TODO: add right-click menu
 cytoscape.use(klay)
 
 class Canvas extends React.Component {

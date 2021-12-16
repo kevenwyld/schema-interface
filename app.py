@@ -1,6 +1,12 @@
 from flask import Flask, render_template, request
 import json
 
+# ===============================================
+# app.py
+# ------------
+# reads json data to send to viewer
+# ===============================================
+
 app = Flask(__name__, static_folder='./static', template_folder='./static')
 
 nodes = {}

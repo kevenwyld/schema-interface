@@ -6,6 +6,9 @@ import Canvas from './Canvas';
 import SideBar from './SideBar';
 import JsonView from './JsonView';
 
+/* Viewer page for the schema interface. */
+
+// TODO: export JSON button
 class Viewer extends Component {
     constructor(props) {
         super(props)
@@ -63,14 +66,14 @@ class Viewer extends Component {
                                 {this.state.schemaName}
                             </h3>;
 
-            // graph (cytoscape) in the middle
+            // graph (cytoscape)
             canvas = <Canvas id="canvas"
                 elements={this.state.schemaResponse}
                 sidebarCallback={this.sidebarCallback}
                 className={canvasClassName}
             />;
             
-            // json editor on the right
+            // json editor
             jsonViewer = <JsonView 
                 schemaJson={this.state.schemaJson} 
                 parentCallback={this.callbackFunction}

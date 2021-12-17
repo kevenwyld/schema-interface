@@ -1,10 +1,13 @@
 import React, { Component } from 'react';
 import isEmpty from 'lodash/isEmpty';
 
+import RefreshIcon from '@material-ui/icons/Refresh';
+
 import UploadModal from './UploadModal';
 import Canvas from './Canvas';
 import SideBar from './SideBar';
 import JsonView from './JsonView';
+import SchemaModal from './SchemaModal';
 
 /* Viewer page for the schema interface. */
 
@@ -51,6 +54,8 @@ class Viewer extends Component {
         let canvas = "";
         let schemaHeading = "";
         let jsonViewer = "";
+        let schemaModal = "";
+        let refresh = "";
         let navEle = "";
         let sidebarClassName = this.state.isOpen ? "sidebar-open" : "sidebar-closed";
         let canvasClassName = this.state.isOpen ? "canvas-shrunk": "canvas-wide";
@@ -74,6 +79,15 @@ class Viewer extends Component {
             />;
             
             // json editor
+            schemaModal = <SchemaModal buttonLabel="Add Schema"
+                parentCallback={this.callbackFunction} />;
+
+            refresh = <RefreshIcon type='button'
+                color="action"
+                fontSize='large'
+                onClick={console.log('boop')}/>;
+            
+            // json viewer
             jsonViewer = <JsonView 
                 schemaJson={this.state.schemaJson} 
                 parentCallback={this.callbackFunction}
@@ -95,6 +109,10 @@ class Viewer extends Component {
                         isOpen={this.state.isOpen} 
                         className={sidebarClassName} />
                     {canvas}
+                    <div style={{height: '3vh'}}>
+                        {schemaModal}
+                        {refresh}
+                    </div>
                     {jsonViewer}
                 </div>
             </div>

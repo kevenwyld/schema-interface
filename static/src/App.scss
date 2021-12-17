@@ -86,3 +86,13 @@
     border: solid darkslateblue 2px;
     overflow-y: auto;
 }
+
+input.form-check-input {
+width: 15px;
+height: 15px;
+padding: 0;
+margin: 0;
+vertical-align: bottom;
+position: relative;
+top: -1px;
+}

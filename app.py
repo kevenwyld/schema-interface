@@ -12,6 +12,8 @@ app = Flask(__name__, static_folder='./static', template_folder='./static')
 nodes = {}
 edges = []
 
+# TODO: handle multiple root nodes
+
 # SDF version 1.3
 schema_key_dict = {
     'root': ['@id', 'name', 'comment', 'description', 'aka', 'qnode', 'qlabel', 'minDuration',
@@ -98,7 +100,6 @@ def get_nodes_and_edges(schema):
     nodes = {}
     edges = []
     containers = []
-    first_run = True
     
     for scheme in schema:
         # create event node
@@ -123,9 +124,7 @@ def get_nodes_and_edges(schema):
         else:
             nodes[scheme_id] = extend_node(create_node(scheme_id, _label, 'root', 'diamond'), scheme)
 
-        if first_run:
-            first_run = False
-        else:
+        if '@type' in nodes[scheme_id]['data']:
             # not root node, change node type
             nodes[scheme_id]['data']['_type'] = 'parent'
             nodes[scheme_id]['data']['_shape'] = 'diamond'

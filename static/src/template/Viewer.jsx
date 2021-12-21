@@ -81,11 +81,6 @@ class Viewer extends Component {
             // json editor
             schemaModal = <SchemaModal buttonLabel="Add Schema"
                 parentCallback={this.callbackFunction} />;
-
-            refresh = <RefreshIcon type='button'
-                color="action"
-                fontSize='large'
-                onClick={console.log('boop')}/>;
             
             // json viewer
             jsonViewer = <JsonView 

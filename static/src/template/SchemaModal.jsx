@@ -157,7 +157,7 @@ class SchemaModal extends Component {
         </div>
         <Modal isOpen={this.state.modal} toggle={this.toggle} className={this.props.className}>
           <ToastContainer />
-          <ModalHeader toggle={this.toggle}>Add Scheme</ModalHeader>
+          <ModalHeader toggle={this.toggle}>Edit Scheme</ModalHeader>
 
           <ModalBody>
             <Form>

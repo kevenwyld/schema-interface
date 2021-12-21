@@ -261,8 +261,8 @@ def homepage():
 def upload():
     file = request.files['file']
     schema_string = file.read().decode("utf-8")
-    schemaJson = json.loads(schema_string)['events']
-    schema = schemaJson
+    schemaJson = json.loads(schema_string)
+    schema = schemaJson['events']
     global nodes
     global edges
     nodes, edges = get_nodes_and_edges(schema)
@@ -288,7 +288,7 @@ def reload_schema():
     """Reloads schema; does the same thing as upload."""
     schema_string = request.data.decode("utf-8")
     schemaJson = json.loads(schema_string)
-    schema = schemaJson
+    schema = schemaJson['events']
     global nodes
     global edges
     nodes, edges = get_nodes_and_edges(schema)

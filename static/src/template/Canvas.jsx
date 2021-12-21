@@ -1,16 +1,14 @@
 import React from 'react';
 import CytoscapeComponent from 'react-cytoscapejs';
 import cytoscape from 'cytoscape';
+// https://github.com/iVis-at-Bilkent/cytoscape.js-context-menus
 import contextMenus from 'cytoscape-context-menus';
 import klay from 'cytoscape-klay';
+// want to use https://github.com/iVis-at-Bilkent/cytoscape.js-expand-collapse
 
 import axios from 'axios';
 import equal from 'fast-deep-equal';
 import RefreshIcon from '@material-ui/icons/Refresh';
-import EditIcon from '@material-ui/icons/Edit';
-import DeleteIcon from '@material-ui/icons/Delete';
-import UndoIcon from '@material-ui/icons/Undo';
-import AddIcon from '@material-ui/icons/Add';
 
 import Background from '../public/canvas_bg.png';
 import CyStyle from '../public/cy-style.json';
@@ -58,6 +56,10 @@ class Canvas extends React.Component {
 
     showSidebar(data) {
         this.props.sidebarCallback(data);
+    }
+
+    showEditor(data) {
+        this.props.editorCallback(data);
     }
 
     showSubTree(node) {
@@ -144,6 +146,7 @@ class Canvas extends React.Component {
                 this.showSidebar(event.target.data());
             })
 
+            // right-click menu
             var contextMenu = this.cy.contextMenus({
                 menuItems: [
                     {
@@ -164,49 +167,49 @@ class Canvas extends React.Component {
                         onClickFunction: this.restore,
                         hasTrailingDivider: true
                     },
-                    {
-                        id: 'add-node',
-                        content: 'add node',
-                        tooltipText: 'add node',
-                        coreAsWell: true,
-                        onClickFunction: function (event) {
-                            var data = {
-                                group: 'nodes'
-                            };
+                    // {
+                    //     id: 'add-node',
+                    //     content: 'add node',
+                    //     tooltipText: 'add node',
+                    //     coreAsWell: true,
+                    //     onClickFunction: function (event) {
+                    //         var data = {
+                    //             group: 'nodes'
+                    //         };
             
-                            var pos = event.position || event.cyPosition;
+                    //         var pos = event.position || event.cyPosition;
             
-                            cy.add({
-                                data: data,
-                                position: {
-                                    x: pos.x,
-                                    y: pos.y
-                                }
-                            });
-                        },
-                    },
-                    {
-                        id: 'add-edge',
-                        content: 'add edge',
-                        tooltipText: 'add edge',
-                        coreAsWell: true,
-                        onClickFunction: function (event) {
-                            var data = {
-                                group: 'edges'
-                            };
+                    //         cy.add({
+                    //             data: data,
+                    //             position: {
+                    //                 x: pos.x,
+                    //                 y: pos.y
+                    //             }
+                    //         });
+                    //     },
+                    // },
+                    // {
+                    //     id: 'add-edge',
+                    //     content: 'add edge',
+                    //     tooltipText: 'add edge',
+                    //     coreAsWell: true,
+                    //     onClickFunction: function (event) {
+                    //         var data = {
+                    //             group: 'edges'
+                    //         };
             
-                            var pos = event.position || event.cyPosition;
+                    //         var pos = event.position || event.cyPosition;
             
-                            cy.add({
-                                data: data,
-                                position: {
-                                    x: pos.x,
-                                    y: pos.y
-                                }
-                            });
-                        },
-                        hasTrailingDivider: true
-                    },
+                    //         cy.add({
+                    //             data: data,
+                    //             position: {
+                    //                 x: pos.x,
+                    //                 y: pos.y
+                    //             }
+                    //         });
+                    //     },
+                    //     hasTrailingDivider: true
+                    // },
                     {
                         id: 'edit-node',
                         content: 'edit node',

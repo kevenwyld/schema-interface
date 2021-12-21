@@ -1,7 +1,7 @@
 import React, { Component } from 'react';
 import isEmpty from 'lodash/isEmpty';
 
-import RefreshIcon from '@material-ui/icons/Refresh';
+import DownloadIcon from '@material-ui/icons/CloudDownload';
 
 import UploadModal from './UploadModal';
 import Canvas from './Canvas';
@@ -21,19 +21,45 @@ class Viewer extends Component {
             schemaName: '',
             schemaJson: '',
             isOpen: false,
+            isUpload: false,
+            downloadUrl: '',
+            fileName: 'schema.json',
+
             nodeData: {}
         }
 
         this.callbackFunction = this.callbackFunction.bind(this);
         this.sidebarCallback = this.sidebarCallback.bind(this);
+        this.editorCallback = this.editorCallback.bind(this);
+        this.download = this.download.bind(this);
+
     }
 
     callbackFunction(response) {
         this.setState({ 
             schemaResponse: Object.assign({}, response.parsedSchema),
             schemaName: response.name,
-            schemaJson: response.schemaJson 
+            schemaJson: response.schemaJson,
+            isUpload: true
         });
+    }
+
+    download(event){
+        event.preventDefault();
+        const output = JSON.stringify(this.state.schemaJson, null, 4)
+        const blob = new Blob([output], {type: 'application/json'});
+        const url = URL.createObjectURL(blob);
+        console.log(url);
+        this.setState({downloadUrl: url},
+            () => {
+                this.dofileDownload.click();
+                URL.revokeObjectURL(url);
+                this.setState({downloadUrl: ''})
+        })
+    }
+
+    editorCallback(data) {
+
     }
 
     sidebarCallback(data) {
@@ -55,7 +81,6 @@ class Viewer extends Component {
         let schemaHeading = "";
         let jsonViewer = "";
         let schemaModal = "";
-        let refresh = "";
         let navEle = "";
         let sidebarClassName = this.state.isOpen ? "sidebar-open" : "sidebar-closed";
         let canvasClassName = this.state.isOpen ? "canvas-shrunk": "canvas-wide";
@@ -75,12 +100,15 @@ class Viewer extends Component {
             canvas = <Canvas id="canvas"
                 elements={this.state.schemaResponse}
                 sidebarCallback={this.sidebarCallback}
+                editorCallback={this.editorCallback}
                 className={canvasClassName}
             />;
             
             // json editor
-            schemaModal = <SchemaModal buttonLabel="Add Schema"
-                parentCallback={this.callbackFunction} />;
+            schemaModal = <SchemaModal buttonLabel="Edit Scheme"
+                schemaJson={this.state.schemaJson}
+                parentCallback={this.callbackFunction}
+            />;
             
             // json viewer
             jsonViewer = <JsonView 
@@ -97,6 +125,12 @@ class Viewer extends Component {
         return (
             <div id="viewer">
                 <UploadModal buttonLabel="Upload Schema" parentCallback={this.callbackFunction} />
+                <DownloadIcon type="button" color={this.state.isUpload ? "action" : "disabled"} onClick={this.download}/>
+                <a style={{display: "none"}}
+                    download={this.state.fileName}
+                    href={this.state.downloadUrl}
+                    ref={e=>this.dofileDownload = e}
+                >download it</a>
                 <div className="row">{schemaHeading}</div>
                 <div style={{display: 'inline-flex'}}>
                     <SideBar
@@ -106,7 +140,6 @@ class Viewer extends Component {
                     {canvas}
                     <div style={{height: '3vh'}}>
                         {schemaModal}
-                        {refresh}
                     </div>
                     {jsonViewer}
                 </div>

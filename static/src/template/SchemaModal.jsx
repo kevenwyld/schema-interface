@@ -62,24 +62,19 @@ class SchemaModal extends Component {
     Checks whether required text fields are completed
     and are the right format.
     */
-    console.log('in validate');
     const err = [];
     
     // id, name, ta1explanation, importance
     if (this.state.id.length === 0){
-      console.log('id');
       err.push("@ID cannot be blank.\n");
     }
     if (this.state.name.length === 0){
-      console.log('name');
       err.push("Name cannot be blank.\n");
     }
     if (this.state.ta1explanation.length === 0){
-      console.log('explanation');
       err.push("TA1 explanation cannot be blank.\n");
     }
     if (this.state.importance > 1 || this.state.importance < 0){
-      console.log('importance');
       err.push("Importance must be a number between 0 and 1.\n");
     }
     if (this.state.qnode.length !== 0){
@@ -89,17 +84,13 @@ class SchemaModal extends Component {
       }
 
       if (!isValidQNode){
-        console.log('qnode');
         err.push("Invalid QNode.\n")
       }
     }
-    console.log(err)
-    console.log('show errors');
     // show errors
     for (var z = 0; z < err.length; z++) { 
       toast.error(err[z]);
     }
-    console.log('return');
     return err.length === 0;
   }
 

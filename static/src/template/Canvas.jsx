@@ -283,7 +283,7 @@ class Canvas extends React.Component {
                     cy={(cy) => { this.cy = cy }}
                     maxZoom={4} minZoom={0.5}
                 />
-                <div style={{'width': '0', height: '3vh'}}>
+                <div style={{'width': '15px', height: '3vh'}}>
                     <RefreshIcon type='button' color="action" fontSize='large' onClick={this.reloadCanvas}/>
                 </div>
             </div>

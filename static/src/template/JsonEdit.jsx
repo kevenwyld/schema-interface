@@ -1,16 +1,69 @@
 import React, {Component} from 'react';
 
-import axios from 'axios';
 import JSONEditor from 'jsoneditor';
-import '../../node_modules/jsoneditor/dist/jsoneditor.min.css';
+import 'jsoneditor/dist/jsoneditor.min.css';
 
-// TODO: icons don't show up
-// TODO: edits in editor do not reflect in graph
+// TODO: be able to add empty string
+    // currently reloads whenever a key is pressed, change to onBlur somehow
 export default class JSONEdit extends Component {
     componentDidMount () {
         const options = {
-        mode: 'tree',
-        onChangeJSON: this.props.parentCallback
+            mode: 'tree',
+            enableTransform: false,
+            onChangeJSON: this.props.parentCallback,
+            templates: [
+                {
+                    text: 'Scheme',
+                    title: 'Insert a Scheme Node',
+                    field: '',
+                    value: {
+                        '@id': 'resin:Events/10000/resin:Events_',
+                        'name': 'Event Name',
+                        'description': 'description',
+                        'qnode': 'Q1234567',
+                        'qlabel': 'qnode',
+                        'minDuration': '',
+                        'maxDuration': '',
+                        'goal': '',
+                        'ta1explanation': '',
+                        'privateData': {
+                            '@type': '',
+                            'template': '',
+                            'repeatable': false,
+                            'importance': 1
+                        },
+                        'participants': [],
+                        'children': [],
+                        'children_gate': 'or'
+                    }
+                },
+                {
+                    text: 'Participant',
+                    title: 'Insert Participant',
+                    field: '',
+                    value: {
+                        '@id': 'resin:Participants/20000/kairos:Primitives_Events_Disaster.Diseaseoutbreak.Unspecified:1_entity',
+                        'roleName': 'A2-GOL_entity',
+                        'entity': 'resin:Entities/00001/'
+                    }
+                },
+                {
+                    text: 'Child',
+                    title: 'Insert Child',
+                    field: '',
+                    value: {
+                        'child': 'resin:Events/10023/Steps_kairos',
+                        'comment': 'name',
+                        'optional': false,
+                        'importance': 1,
+                        'outlinks': [
+                            'outlink',
+                            'outlink',
+                            'outlink'
+                        ]
+                    }
+                }
+            ]
         };
 
         this.jsoneditor = new JSONEditor(this.container, options);
@@ -25,14 +78,6 @@ export default class JSONEdit extends Component {
 
     componentDidUpdate() {
         this.jsoneditor.update(this.props.schemaJson);
-        axios.post("/reload", this.props.schemaJson)
-            .then(res => {
-                this.parentCallback(res.data);
-            })
-            .catch(err => {
-                console.error('reload fail');
-                return false;
-            });
     }
 
     render() {

@@ -45,10 +45,24 @@
 #viewer {
     width: 100vw;
 
+    .container {
+        display: flex;
+        align-items: center;
+        justify-content: center;
+        height: 4vh;
+    }
     .schema-name {
         float: right;
         margin-right: 2vw;
     }
+}
+
+.button {
+    margin-left: 5px;
+}
+
+.button:hover {
+    background: #83a3bb;
 }
 
 .canvas-shrunk {

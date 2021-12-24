@@ -11,6 +11,7 @@ import AddCircleIcon from '@material-ui/icons/AddCircle';
 
 /* Shows a pop-up window to create and edit JSON data. */
 // TODO: add submitted data to json
+// TODO: add child areas
 class SchemaModal extends Component {
   constructor(props) {
     super(props);

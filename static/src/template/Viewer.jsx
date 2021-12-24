@@ -3,6 +3,7 @@ import isEmpty from 'lodash/isEmpty';
 
 import DownloadIcon from '@material-ui/icons/CloudDownload';
 
+import axios from 'axios';
 import UploadModal from './UploadModal';
 import Canvas from './Canvas';
 import SideBar from './SideBar';
@@ -27,6 +28,7 @@ class Viewer extends Component {
         }
 
         this.callbackFunction = this.callbackFunction.bind(this);
+        this.jsonEditorCallback = this.jsonEditorCallback.bind(this);
         this.sidebarCallback = this.sidebarCallback.bind(this);
         this.download = this.download.bind(this);
 
@@ -52,6 +54,18 @@ class Viewer extends Component {
                 URL.revokeObjectURL(url);
                 this.setState({downloadUrl: ''})
         })
+    }
+
+    jsonEditorCallback(json){
+        axios.post("/reload", json)
+            .then(res => {
+                console.log('reload success')
+                this.callbackFunction(res.data);
+            })
+            .catch(err => {
+                console.error('reload fail:', err);
+                return false;
+            });
     }
 
     sidebarCallback(data) {
@@ -96,8 +110,9 @@ class Viewer extends Component {
             />;
             
             jsonEdit = <JsonEdit
+                style={{width: 'inherit', height: '75vh'}}
                 schemaJson={this.state.schemaJson}
-                parentCallback={this.callbackFunction}
+                parentCallback={this.jsonEditorCallback}
             />
 
             // json viewer
@@ -114,13 +129,15 @@ class Viewer extends Component {
 
         return (
             <div id="viewer">
-                <UploadModal buttonLabel="Upload Schema" parentCallback={this.callbackFunction} />
-                <DownloadIcon type="button" color={this.state.isUpload ? "action" : "disabled"} onClick={this.download}/>
-                <a style={{display: "none"}}
-                    download={this.state.fileName}
-                    href={this.state.downloadUrl}
-                    ref={e=>this.dofileDownload = e}
-                >download it</a>
+                <div className='container'>
+                    <UploadModal buttonLabel="Upload Schema" parentCallback={this.callbackFunction} />
+                    <DownloadIcon className="button" type="button" color={this.state.isUpload ? "action" : "disabled"} onClick={this.download}/>
+                    <a style={{display: "none"}}
+                        download={this.state.fileName}
+                        href={this.state.downloadUrl}
+                        ref={e=>this.dofileDownload = e}
+                    >download it</a>
+                </div>
                 <div className="row">{schemaHeading}</div>
                 <div style={{display: 'inline-flex'}}>
                     <SideBar

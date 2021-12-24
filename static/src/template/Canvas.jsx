@@ -2,6 +2,7 @@ import React from 'react';
 import CytoscapeComponent from 'react-cytoscapejs';
 import cytoscape from 'cytoscape';
 import klay from 'cytoscape-klay';
+// want to use https://github.com/iVis-at-Bilkent/cytoscape.js-expand-collapse
 
 import axios from 'axios';
 import equal from 'fast-deep-equal';
@@ -10,7 +11,21 @@ import RefreshIcon from '@material-ui/icons/Refresh';
 import Background from '../public/canvas_bg.png';
 import CyStyle from '../public/cy-style.json';
 
-cytoscape.use(klay)
+/* Graph view of the data.
+   Includes reload button. */
+
+
+// TODO: add right-click menu
+    // TODO: allow editing
+        // call schemaModal
+        // push data from schemaModal back
+// TODO: top-level task: make a more user-friendly editor
+    // TODO: add blocks of JSON based off of type of JSON
+        // scheme
+        // participant
+        // child
+cytoscape.use(klay);
+// cytoscape.use(contextMenus);
 
 class Canvas extends React.Component {
     constructor(props) {
@@ -19,7 +34,8 @@ class Canvas extends React.Component {
             canvasElements: CytoscapeComponent.normalizeElements(this.props.elements),
             hasSubtree: false,
             // static copy of topmost tree
-            topTree: null
+            topTree: null,
+            removed: null
         }
 
         // create topTree
@@ -34,10 +50,16 @@ class Canvas extends React.Component {
         this.removeSubTree = this.removeSubTree.bind(this);
         this.runLayout = this.runLayout.bind(this);
         this.reloadCanvas = this.reloadCanvas.bind(this);
+        this.removeObject = this.removeObject.bind(this);
+        this.restore = this.restore.bind(this);
     }
 
     showSidebar(data) {
         this.props.sidebarCallback(data);
+    }
+
+    showEditor(data) {
+        this.props.editorCallback(data);
     }
 
     showSubTree(node) {
@@ -84,6 +106,20 @@ class Canvas extends React.Component {
         this.runLayout();
     }
 
+    removeObject(event) {
+        this.setState({removed: event.target});
+        event.target.remove();
+    }
+
+    restore(){
+        var res = null;
+        if (this.state.removed){
+            res = this.state.removed;
+            this.setState({removed: null});
+            res.restore();
+        }
+    }
+
     componentDidMount() {
         this.cy.ready(() => {
             // left-click 
@@ -107,8 +143,119 @@ class Canvas extends React.Component {
                     this.runLayout();
                 }
                 // show information of node
-                this.props.sidebarCallback(event.target.data());
+                this.showSidebar(event.target.data());
             })
+
+            // right-click menu
+            // var contextMenu = this.cy.contextMenus({
+            //     menuItems: [
+            //         {
+            //             id: 'remove',
+            //             content: 'remove',
+            //             tooltipText: 'remove',
+            //             selector: 'node, edge',
+            //             onClickFunction: this.removeObject,
+            //             hasTrailingDivider: true
+            //         },
+            //         {
+            //             id: 'undo-last-remove',
+            //             content: 'undo last remove',
+            //             selector: 'node, edge',
+            //             disabled: this.state.removed ? true : false,
+            //             show: true,
+            //             coreAsWell: true,
+            //             onClickFunction: this.restore,
+            //             hasTrailingDivider: true
+            //         },
+            //         // {
+            //         //     id: 'add-node',
+            //         //     content: 'add node',
+            //         //     tooltipText: 'add node',
+            //         //     coreAsWell: true,
+            //         //     onClickFunction: function (event) {
+            //         //         var data = {
+            //         //             group: 'nodes'
+            //         //         };
+            
+            //         //         var pos = event.position || event.cyPosition;
+            
+            //         //         cy.add({
+            //         //             data: data,
+            //         //             position: {
+            //         //                 x: pos.x,
+            //         //                 y: pos.y
+            //         //             }
+            //         //         });
+            //         //     },
+            //         // },
+            //         // {
+            //         //     id: 'add-edge',
+            //         //     content: 'add edge',
+            //         //     tooltipText: 'add edge',
+            //         //     coreAsWell: true,
+            //         //     onClickFunction: function (event) {
+            //         //         var data = {
+            //         //             group: 'edges'
+            //         //         };
+            
+            //         //         var pos = event.position || event.cyPosition;
+            
+            //         //         cy.add({
+            //         //             data: data,
+            //         //             position: {
+            //         //                 x: pos.x,
+            //         //                 y: pos.y
+            //         //             }
+            //         //         });
+            //         //     },
+            //         //     hasTrailingDivider: true
+            //         // },
+            //         {
+            //             id: 'edit-node',
+            //             content: 'edit node',
+            //             tooltipText: 'edit node',
+            //             selector: 'node',
+            //             coreAsWell: true,
+            //             onClickFunction: function (event) {
+            //                 var data = {
+            //                     group: 'nodes'
+            //                 };
+            
+            //                 var pos = event.position || event.cyPosition;
+            
+            //                 cy.add({
+            //                     data: data,
+            //                     position: {
+            //                         x: pos.x,
+            //                         y: pos.y
+            //                     }
+            //                 });
+            //             },
+            //         },
+            //         {
+            //             id: 'edit-edge',
+            //             content: 'edit edge',
+            //             tooltipText: 'edit edge',
+            //             selector: 'edge',
+            //             coreAsWell: true,
+            //             onClickFunction: function (event) {
+            //                 var data = {
+            //                     group: 'edges'
+            //                 };
+            
+            //                 var pos = event.position || event.cyPosition;
+            
+            //                 cy.add({
+            //                     data: data,
+            //                     position: {
+            //                         x: pos.x,
+            //                         y: pos.y
+            //                     }
+            //                 });
+            //             },
+            //         }
+            //     ]   
+            //   })
         })
     }
 
@@ -136,7 +283,7 @@ class Canvas extends React.Component {
                     cy={(cy) => { this.cy = cy }}
                     maxZoom={4} minZoom={0.5}
                 />
-                <div style={{'width': '0', height: '3vh'}}>
+                <div style={{'width': '15px', height: '3vh'}}>
                     <RefreshIcon type='button' color="action" fontSize='large' onClick={this.reloadCanvas}/>
                 </div>
             </div>

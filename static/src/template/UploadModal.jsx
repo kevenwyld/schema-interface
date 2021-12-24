@@ -1,8 +1,12 @@
 import React, { Component } from 'react';
 import { Button, Modal, ModalHeader, ModalBody, ModalFooter, Progress, Input, Label, Form,FormGroup } from 'reactstrap';
 import { ToastContainer, toast } from 'react-toastify';
+import 'react-toastify/dist/ReactToastify.css';
 
 import axios from 'axios';
+
+/* Upload modal to upload JSON file.
+   Shows a pop-up window. */
 
 class UploadModal extends Component {
   constructor(props) {
@@ -24,9 +28,9 @@ class UploadModal extends Component {
   toggle() {
     this.setState({
       modal: !this.state.modal,
-      valid: false,
       selectedFile: null,
       loaded: 0,
+      valid: false
     })
   }
 
@@ -139,14 +143,15 @@ class UploadModal extends Component {
         setTimeout(this.toggle, 1000);
       })
       .catch(err => { // then print response status
-        toast.error('upload fail');
+        this.setState({ valid: false });
+        toast.error('upload fail, check console');
       });
   }
 
   render() {
     /*
-    Renders the upload schema button. 
-    Opens up a sub window where you can upload a file or cancel.
+    Opens up a sub window when Upload Schema button is pressed,
+    where you can upload a file or cancel.
     Checks the validity of the file.
     Upon pressing upload, shows an upload progress bar.
     */
@@ -164,6 +169,7 @@ class UploadModal extends Component {
           </Button>
         </div>
         <Modal isOpen={this.state.modal} toggle={this.toggle} className={this.props.className}>
+          <ToastContainer />
           <ModalHeader toggle={this.toggle}>Upload Schema</ModalHeader>
 
           <ModalBody>
@@ -174,14 +180,14 @@ class UploadModal extends Component {
               </FormGroup>
 
               <FormGroup>
-                <ToastContainer closeButton={false} />
-                <Progress max="100" color="success" value={this.state.loaded} >{Math.round(this.state.loaded, 2)}%</Progress>
+                <Progress max="100" color={this.state.valid ? "success":"danger"}
+                  value={this.state.loaded} transition="width 1s ease-in-out" >{Math.round(this.state.loaded, 2)}%</Progress>
               </FormGroup>
             </Form>
           </ModalBody>
 
           <ModalFooter>
-            <Button disabled={!this.state.valid} color="success" onClick={this.onClickHandler}>
+            <Button disabled={!this.state.valid} color="primary" onClick={this.onClickHandler}>
               Upload
             </Button>{' '}
             <Button color="secondary" onClick={this.toggle}>Cancel</Button>

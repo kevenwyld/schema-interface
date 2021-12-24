@@ -79,10 +79,10 @@ class JsonView extends Component {
             <div id="schema-json">
                 <ReactJson 
                     name={"schema"}
-                    sortKeys
                     style={style}
                     src={this.props.schemaJson}
-                    collapsed={2}
+                    collapsed={3}
+                    displayArrayKey={false}
                     displayDataTypes={false}
                     displayObjectSize={true}
                     indentWidth={2}

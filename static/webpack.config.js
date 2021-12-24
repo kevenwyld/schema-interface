@@ -28,7 +28,14 @@ module.exports = {
             },
             {
                 test: /\.svg$/,
-                loader: 'svg-inline-loader'
+                use: [
+                    {
+                      loader: 'svg-url-loader',
+                      options: {
+                        iesafe: true,
+                      },
+                    },
+                ],
             },
             {
                 test: /\.(woff|woff2|eot|ttf|otf)$/,

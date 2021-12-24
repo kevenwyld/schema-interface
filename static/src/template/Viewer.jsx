@@ -7,11 +7,9 @@ import UploadModal from './UploadModal';
 import Canvas from './Canvas';
 import SideBar from './SideBar';
 import JsonView from './JsonView';
-import SchemaModal from './SchemaModal';
+import JsonEdit from './JsonEdit';
 
 /* Viewer page for the schema interface. */
-
-// TODO: export JSON button
 class Viewer extends Component {
     constructor(props) {
         super(props)
@@ -30,7 +28,6 @@ class Viewer extends Component {
 
         this.callbackFunction = this.callbackFunction.bind(this);
         this.sidebarCallback = this.sidebarCallback.bind(this);
-        this.editorCallback = this.editorCallback.bind(this);
         this.download = this.download.bind(this);
 
     }
@@ -49,17 +46,12 @@ class Viewer extends Component {
         const output = JSON.stringify(this.state.schemaJson, null, 4)
         const blob = new Blob([output], {type: 'application/json'});
         const url = URL.createObjectURL(blob);
-        console.log(url);
         this.setState({downloadUrl: url},
             () => {
                 this.dofileDownload.click();
                 URL.revokeObjectURL(url);
                 this.setState({downloadUrl: ''})
         })
-    }
-
-    editorCallback(data) {
-
     }
 
     sidebarCallback(data) {
@@ -79,8 +71,8 @@ class Viewer extends Component {
     render() {
         let canvas = "";
         let schemaHeading = "";
+        let jsonEdit = "";
         let jsonViewer = "";
-        let schemaModal = "";
         let navEle = "";
         let sidebarClassName = this.state.isOpen ? "sidebar-open" : "sidebar-closed";
         let canvasClassName = this.state.isOpen ? "canvas-shrunk": "canvas-wide";
@@ -100,16 +92,14 @@ class Viewer extends Component {
             canvas = <Canvas id="canvas"
                 elements={this.state.schemaResponse}
                 sidebarCallback={this.sidebarCallback}
-                editorCallback={this.editorCallback}
                 className={canvasClassName}
             />;
             
-            // json editor
-            schemaModal = <SchemaModal buttonLabel="Edit Scheme"
+            jsonEdit = <JsonEdit
                 schemaJson={this.state.schemaJson}
                 parentCallback={this.callbackFunction}
-            />;
-            
+            />
+
             // json viewer
             jsonViewer = <JsonView 
                 schemaJson={this.state.schemaJson} 
@@ -138,10 +128,8 @@ class Viewer extends Component {
                         isOpen={this.state.isOpen} 
                         className={sidebarClassName} />
                     {canvas}
-                    <div style={{height: '3vh'}}>
-                        {schemaModal}
-                    </div>
-                    {jsonViewer}
+                    {jsonEdit}
+                    {/* {jsonViewer} */}
                 </div>
             </div>
         )

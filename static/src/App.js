@@ -29,7 +29,7 @@ export default function App() {
           <Col md="6" className="align-self-center">
             <Row>
               <Col md="3" className="nav-items">
-                <Link to="/" color="white">Home</Link>
+                <Link to="/">Home</Link>
               </Col>
               <Col md="3" className="nav-items">
                 <Link to="/viewer">Viewer</Link>

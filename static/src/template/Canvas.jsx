@@ -1,8 +1,6 @@
 import React from 'react';
 import CytoscapeComponent from 'react-cytoscapejs';
 import cytoscape from 'cytoscape';
-// https://github.com/iVis-at-Bilkent/cytoscape.js-context-menus
-import contextMenus from 'cytoscape-context-menus';
 import klay from 'cytoscape-klay';
 // want to use https://github.com/iVis-at-Bilkent/cytoscape.js-expand-collapse
 
@@ -12,20 +10,22 @@ import RefreshIcon from '@material-ui/icons/Refresh';
 
 import Background from '../public/canvas_bg.png';
 import CyStyle from '../public/cy-style.json';
-import 'cytoscape-context-menus/cytoscape-context-menus.css';
 
 /* Graph view of the data.
    Includes reload button. */
 
 
 // TODO: add right-click menu
+    // TODO: allow editing
+        // call schemaModal
+        // push data from schemaModal back
 // TODO: top-level task: make a more user-friendly editor
     // TODO: add blocks of JSON based off of type of JSON
         // scheme
         // participant
         // child
 cytoscape.use(klay);
-cytoscape.use(contextMenus);
+// cytoscape.use(contextMenus);
 
 class Canvas extends React.Component {
     constructor(props) {
@@ -147,115 +147,115 @@ class Canvas extends React.Component {
             })
 
             // right-click menu
-            var contextMenu = this.cy.contextMenus({
-                menuItems: [
-                    {
-                        id: 'remove',
-                        content: 'remove',
-                        tooltipText: 'remove',
-                        selector: 'node, edge',
-                        onClickFunction: this.removeObject,
-                        hasTrailingDivider: true
-                    },
-                    {
-                        id: 'undo-last-remove',
-                        content: 'undo last remove',
-                        selector: 'node, edge',
-                        disabled: this.state.removed ? true : false,
-                        show: true,
-                        coreAsWell: true,
-                        onClickFunction: this.restore,
-                        hasTrailingDivider: true
-                    },
-                    // {
-                    //     id: 'add-node',
-                    //     content: 'add node',
-                    //     tooltipText: 'add node',
-                    //     coreAsWell: true,
-                    //     onClickFunction: function (event) {
-                    //         var data = {
-                    //             group: 'nodes'
-                    //         };
+            // var contextMenu = this.cy.contextMenus({
+            //     menuItems: [
+            //         {
+            //             id: 'remove',
+            //             content: 'remove',
+            //             tooltipText: 'remove',
+            //             selector: 'node, edge',
+            //             onClickFunction: this.removeObject,
+            //             hasTrailingDivider: true
+            //         },
+            //         {
+            //             id: 'undo-last-remove',
+            //             content: 'undo last remove',
+            //             selector: 'node, edge',
+            //             disabled: this.state.removed ? true : false,
+            //             show: true,
+            //             coreAsWell: true,
+            //             onClickFunction: this.restore,
+            //             hasTrailingDivider: true
+            //         },
+            //         // {
+            //         //     id: 'add-node',
+            //         //     content: 'add node',
+            //         //     tooltipText: 'add node',
+            //         //     coreAsWell: true,
+            //         //     onClickFunction: function (event) {
+            //         //         var data = {
+            //         //             group: 'nodes'
+            //         //         };
             
-                    //         var pos = event.position || event.cyPosition;
+            //         //         var pos = event.position || event.cyPosition;
             
-                    //         cy.add({
-                    //             data: data,
-                    //             position: {
-                    //                 x: pos.x,
-                    //                 y: pos.y
-                    //             }
-                    //         });
-                    //     },
-                    // },
-                    // {
-                    //     id: 'add-edge',
-                    //     content: 'add edge',
-                    //     tooltipText: 'add edge',
-                    //     coreAsWell: true,
-                    //     onClickFunction: function (event) {
-                    //         var data = {
-                    //             group: 'edges'
-                    //         };
+            //         //         cy.add({
+            //         //             data: data,
+            //         //             position: {
+            //         //                 x: pos.x,
+            //         //                 y: pos.y
+            //         //             }
+            //         //         });
+            //         //     },
+            //         // },
+            //         // {
+            //         //     id: 'add-edge',
+            //         //     content: 'add edge',
+            //         //     tooltipText: 'add edge',
+            //         //     coreAsWell: true,
+            //         //     onClickFunction: function (event) {
+            //         //         var data = {
+            //         //             group: 'edges'
+            //         //         };
             
-                    //         var pos = event.position || event.cyPosition;
+            //         //         var pos = event.position || event.cyPosition;
             
-                    //         cy.add({
-                    //             data: data,
-                    //             position: {
-                    //                 x: pos.x,
-                    //                 y: pos.y
-                    //             }
-                    //         });
-                    //     },
-                    //     hasTrailingDivider: true
-                    // },
-                    {
-                        id: 'edit-node',
-                        content: 'edit node',
-                        tooltipText: 'edit node',
-                        selector: 'node',
-                        coreAsWell: true,
-                        onClickFunction: function (event) {
-                            var data = {
-                                group: 'nodes'
-                            };
+            //         //         cy.add({
+            //         //             data: data,
+            //         //             position: {
+            //         //                 x: pos.x,
+            //         //                 y: pos.y
+            //         //             }
+            //         //         });
+            //         //     },
+            //         //     hasTrailingDivider: true
+            //         // },
+            //         {
+            //             id: 'edit-node',
+            //             content: 'edit node',
+            //             tooltipText: 'edit node',
+            //             selector: 'node',
+            //             coreAsWell: true,
+            //             onClickFunction: function (event) {
+            //                 var data = {
+            //                     group: 'nodes'
+            //                 };
             
-                            var pos = event.position || event.cyPosition;
+            //                 var pos = event.position || event.cyPosition;
             
-                            cy.add({
-                                data: data,
-                                position: {
-                                    x: pos.x,
-                                    y: pos.y
-                                }
-                            });
-                        },
-                    },
-                    {
-                        id: 'edit-edge',
-                        content: 'edit edge',
-                        tooltipText: 'edit edge',
-                        selector: 'edge',
-                        coreAsWell: true,
-                        onClickFunction: function (event) {
-                            var data = {
-                                group: 'edges'
-                            };
+            //                 cy.add({
+            //                     data: data,
+            //                     position: {
+            //                         x: pos.x,
+            //                         y: pos.y
+            //                     }
+            //                 });
+            //             },
+            //         },
+            //         {
+            //             id: 'edit-edge',
+            //             content: 'edit edge',
+            //             tooltipText: 'edit edge',
+            //             selector: 'edge',
+            //             coreAsWell: true,
+            //             onClickFunction: function (event) {
+            //                 var data = {
+            //                     group: 'edges'
+            //                 };
             
-                            var pos = event.position || event.cyPosition;
+            //                 var pos = event.position || event.cyPosition;
             
-                            cy.add({
-                                data: data,
-                                position: {
-                                    x: pos.x,
-                                    y: pos.y
-                                }
-                            });
-                        },
-                    }
-                ]   
-              })
+            //                 cy.add({
+            //                     data: data,
+            //                     position: {
+            //                         x: pos.x,
+            //                         y: pos.y
+            //                     }
+            //                 });
+            //             },
+            //         }
+            //     ]   
+            //   })
         })
     }
 

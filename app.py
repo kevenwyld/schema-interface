@@ -12,13 +12,9 @@ app = Flask(__name__, static_folder='./static', template_folder='./static')
 nodes = {}
 edges = []
 
-# TODO: handle multiple root nodes
-
 # SDF version 1.3
 schema_key_dict = {
-    'root': ['@id', 'name', 'comment', 'description', 'aka', 'qnode', 'qlabel', 'minDuration',
-             'maxDuration', 'goal', 'ta1explanation', 'importance', 'children_gate'],
-             # TODO: handle xor children_gates
+    'root': ['@id', 'name', 'comment', 'description', 'aka', 'qnode', 'qlabel', 'minDuration', 'maxDuration', 'goal', 'ta1explanation', 'importance', 'children_gate'],
     'participant': ['@id', 'roleName', 'entity'],
     'child': ['child', 'comment', 'optional', 'importance', 'outlinks', 'outlink_gate'],
     'privateData': ['@type', 'template', 'repeatable', 'importance']
@@ -147,14 +143,12 @@ def get_nodes_and_edges(schema):
 
         # children
         if 'children' in scheme:
-            xor_gate = False
+            gate = 'or'
             if nodes[scheme_id]['data']['children_gate'] == 'xor':
-                xor_gate = True
+                gate = 'xor'
+            elif nodes[scheme_id]['data']['children_gate'] == 'and':
+                gate = 'and'
             for child in scheme['children']:
-                if xor_gate:
-                    xor_id = f'{scheme_id}xor'
-                    nodes[xor_id] = create_node(xor_id, 'XOR', 'gate', 'rectangle')
-                    edges.append(create_edge(scheme_id, xor_id, _edge_type='child_outlink'))
                 child_id = child['child']
                 # node already exists
                 if child_id in nodes:
@@ -165,10 +159,16 @@ def get_nodes_and_edges(schema):
                 # new node
                 else:                    
                     nodes[child_id] = extend_node(create_node(child_id, child['comment'], 'child', 'ellipse'), child)
-                if xor_gate:
+
+                # handle xor gate
+                if gate == 'xor':
+                    xor_id = f'{scheme_id}xor'
+                    nodes[xor_id] = create_node(xor_id, 'XOR', 'gate', 'rectangle')
+                    edges.append(create_edge(scheme_id, xor_id, _edge_type='child_outlink'))
                     edges.append(create_edge(xor_id, child_id, _edge_type='child_outlink'))
                     parentless_xor.append((xor_id, child_id))
-                edges.append(create_edge(scheme_id, child_id, _edge_type='step_child'))
+
+                edges.append(create_edge(scheme_id, child_id, _edge_type='child_outlink' if gate == 'and' else 'step_child'))
             
                 # check for outlinks
                 if len(child['outlinks']):
@@ -181,7 +181,7 @@ def get_nodes_and_edges(schema):
         # handle containers, ie. connect previous node to all their successors
         edges_to_remove = []
         for container in containers:
-            target = False
+            edge_type = False
             source_id = False
             for edge in edges:
                 if 'searched' in edge['data'] and edge['data']['searched']:
@@ -191,12 +191,12 @@ def get_nodes_and_edges(schema):
                     edge['data']['searched'] = True
                     edges_to_remove.append(edge)
                 if edge['data']['source'] == container:
-                    target = True
+                    edge_type = edge['data']['_edge_type']
                     edge['data']['searched'] = True
-                if source_id and target:
+                if source_id and edge_type:
                     edges_to_remove.append(edge)
-                    edges.append(create_edge(source_id, edge['data']['target'], _edge_type='child_outlink'))
-                    target = False
+                    edges.append(create_edge(source_id, edge['data']['target'], _edge_type=edge_type))
+                    edge_type = False
 
         for index in edges_to_remove:
             edges.remove(index)

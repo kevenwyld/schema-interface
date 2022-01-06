@@ -82,7 +82,7 @@ export default class JSONEdit extends Component {
 
     render() {
         return (
-            <div className="jsoneditor-react-container" ref={elem => this.container = elem} />
+            <div id="schema-json" className="jsoneditor-react-container" ref={elem => this.container = elem} />
         );
     }
 }

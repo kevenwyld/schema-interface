@@ -11,22 +11,15 @@ import RefreshIcon from '@material-ui/icons/Refresh';
 import Background from '../public/canvas_bg.png';
 import CyStyle from '../public/cy-style.json';
 
-/* Graph view of the data.
-   Includes reload button. */
-
-
 // TODO: add right-click menu
-    // TODO: allow editing
-        // call schemaModal
-        // push data from schemaModal back
-// TODO: top-level task: make a more user-friendly editor
-    // TODO: add blocks of JSON based off of type of JSON
-        // scheme
-        // participant
-        // child
+// TODO: allow removing edges and nodes
+// TODO: add uncollapse without complete reload
+// add pan-zoom menu because it's hard to pinpoint the exact area of nodes
 cytoscape.use(klay);
 // cytoscape.use(contextMenus);
 
+/* Graph view of the data.
+   Includes reload button. */
 class Canvas extends React.Component {
     constructor(props) {
         super(props);

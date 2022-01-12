@@ -136,7 +136,7 @@ def get_nodes_and_edges(schema):
         # participants
         if 'participants' in scheme:
             for participant in scheme['participants']:
-                _label = participant['roleName'].split('/')[-1].replace('_', '')
+                _label = participant['roleName'].split('/')[-1]
                 nodes[participant['@id']] = extend_node(create_node(participant['@id'], _label, 'participant', 'square'), participant)
                 
                 edges.append(create_edge(scheme_id, participant['@id'], _edge_type='step_participant'))

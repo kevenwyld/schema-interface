@@ -37,16 +37,21 @@ The tool mainly uses 3 resources:
 
 ## Usage
 
-Currently the tool has 4 sections, namely Home, Viewer, Compare, Github. GitHub links to this repository.
+Currently only the **Viewer** is available for use. **Home** is a landing page and **GitHub** links to this repository.
 
 ### Viewer
-* An **Upload Schema** button that opens a modal to upload file from the local file system.
-* A **Canvas** where the schema is represented. The canvas allows one to zoom-in and zoom-out, move one node at a time and move the entire structure. There is a **reload** icon on the top right corner of the canvas that resets the graph to its original position. Nodes can be clicked to show subtrees of children and participants.
-* A **JSON viewer** that gives the json view of the schema. This viewer allows editing of the schema which in turn updates the graph. The viewer allows 4 main funtionalities.
-  * **Copy**: A "Copy-to-Clipboard" icon shows up on every object of the json structure which allows one to copy the entire value. For object, number and string, it copies the value assigned to the property. For arrays, it copies all the entries in the list.
-  * **Add**: A "+" icon signifies adding an entry. Within objects, it expects a key and initialize it with "NULL" which can then be edited to the required value. In arrays, it expects a value in the form of an object or a string.
-  * **Edit**: Selecting "notepad-with-pen" icon allows editing the value of the respective key. This option is missing in arrays.
-  * **Delete**: Clicking on "X" icon will delete that entry in the object. Using it in array will remove the entire object and reduce the length of the list by 1.
-  
-  For an interactive [demo](https://mac-s-g.github.io/react-json-view/demo/dist/).
-* A **SideBar** opens up on the left side of the canvas giving information about the selected node. This window opens only when a node is right-clicked. It gives the details about the nodes like name, id, description, comments, explanation from TA1, importance etc. These information will only be visible if they are mentioned in the schema.
+- **Upload Schema** to upload a JSON file from your local file system, and **download** it when you are done with curation.
+- **Canvas** shows a graphical representation of the uploaded JSON file. The canvas allows for zoom and node drag-and-drop. **Reloading** the canvas is supported with a reload icon on the top right corner of the canvas. Nodes can be clicked to show subtrees of children nodes and participants.
+- **JSON Editor**[[1]](https://github.com/josdejong/jsoneditor/tree/master) showing the uploaded JSON. Editing the JSON will update the graph in the canvas. Functionalities include:
+  - **⚠ A bug crashes the website when a field with an empty value is instantiated, so *please duplicate existing fields* instead of adding, for example, empty strings when adding new information.**
+  - **Expand and Collapse All** lists and dictionaries of the JSON.
+  - **Sort contents**
+  - **History** for accidents.
+  - **Search Bar** to locate events more easily.
+  - **Drag** to move fields and their values between lists and dictionaries.
+  - **Templates** of events, children, participants, etc. for easier curation.
+  - **Duplication**
+  - **Deletion**
+- A **Sidebar** is available on the left side of the canvas giving information about the selected node. This window opens only when a node is right-clicked. It gives the details about the node, such as its name, id, description, comments, explanation from TA1, importance, etc. All information is directly taken from the JSON.
+---
+[[1]](https://github.com/josdejong/jsoneditor/tree/master) A web-based tool to view, edit, format, and validate JSON by Jos de Jong

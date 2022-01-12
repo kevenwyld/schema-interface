@@ -7,7 +7,6 @@ import axios from 'axios';
 import UploadModal from './UploadModal';
 import Canvas from './Canvas';
 import SideBar from './SideBar';
-import JsonView from './JsonView';
 import JsonEdit from './JsonEdit';
 
 /* Viewer page for the schema interface. */
@@ -86,7 +85,6 @@ class Viewer extends Component {
         let canvas = "";
         let schemaHeading = "";
         let jsonEdit = "";
-        let jsonViewer = "";
         let navEle = "";
         let sidebarClassName = this.state.isOpen ? "sidebar-open" : "sidebar-closed";
         let canvasClassName = this.state.isOpen ? "canvas-shrunk": "canvas-wide";
@@ -114,12 +112,6 @@ class Viewer extends Component {
                 schemaJson={this.state.schemaJson}
                 parentCallback={this.jsonEditorCallback}
             />
-
-            // json viewer
-            jsonViewer = <JsonView 
-                schemaJson={this.state.schemaJson} 
-                parentCallback={this.callbackFunction}
-            />;
         
         } else {
             if (navEle) {
@@ -146,7 +138,6 @@ class Viewer extends Component {
                         className={sidebarClassName} />
                     {canvas}
                     {jsonEdit}
-                    {/* {jsonViewer} */}
                 </div>
             </div>
         )

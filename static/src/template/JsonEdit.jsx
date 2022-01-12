@@ -13,28 +13,28 @@ export default class JSONEdit extends Component {
             onChangeJSON: this.props.parentCallback,
             templates: [
                 {
-                    text: 'Scheme',
-                    title: 'Insert a Scheme Node',
+                    text: 'Event',
+                    title: 'Insert an Event Node',
                     field: '',
                     value: {
                         '@id': 'resin:Events/10000/resin:Events_',
                         'name': 'Event Name',
-                        'description': 'description',
+                        'comment': 'description',
                         'qnode': 'Q1234567',
                         'qlabel': 'qnode',
+                        'participants': [],
                         'minDuration': '',
                         'maxDuration': '',
+                        'description': 'description',
                         'goal': '',
                         'ta1explanation': '',
+                        'children': [],
+                        'children_gate': 'or',
                         'privateData': {
                             '@type': '',
                             'template': '',
-                            'repeatable': false,
-                            'importance': 1
-                        },
-                        'participants': [],
-                        'children': [],
-                        'children_gate': 'or'
+                            'repeatable': false
+                        }
                     }
                 },
                 {
@@ -43,7 +43,7 @@ export default class JSONEdit extends Component {
                     field: '',
                     value: {
                         '@id': 'resin:Participants/20000/kairos:Primitives_Events_Disaster.Diseaseoutbreak.Unspecified:1_entity',
-                        'roleName': 'A2-GOL_entity',
+                        'roleName': 'consult_XPO',
                         'entity': 'resin:Entities/00001/'
                     }
                 },

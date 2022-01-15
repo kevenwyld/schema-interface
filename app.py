@@ -130,7 +130,7 @@ def get_nodes_and_edges(schema):
             nodes[scheme_id]['data']['_type'] = 'child'
             nodes[scheme_id]['data']['_shape'] = 'ellipse'
         # handle repeatable
-        if nodes[scheme_id]['data']['repeatable']:
+        if 'repeatable' in nodes[scheme_id]['data'] and nodes[scheme_id]['data']['repeatable']:
             edges.append(create_edge(scheme_id, scheme_id, _edge_type='child_outlink'))
 
         # participants

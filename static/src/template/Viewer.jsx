@@ -7,6 +7,7 @@ import axios from 'axios';
 import UploadModal from './UploadModal';
 import Canvas from './Canvas';
 import SideBar from './SideBar';
+import SideEditor from './SideEditor';
 import JsonEdit from './JsonEdit';
 
 /* Viewer page for the schema interface. */
@@ -132,7 +133,11 @@ class Viewer extends Component {
                 </div>
                 <div className="row">{schemaHeading}</div>
                 <div style={{display: 'inline-flex'}}>
-                    <SideBar
+                    {/* <SideBar
+                        data={this.state.nodeData}
+                        isOpen={this.state.isOpen} 
+                        className={sidebarClassName} /> */}
+                    <SideEditor
                         data={this.state.nodeData}
                         isOpen={this.state.isOpen} 
                         className={sidebarClassName} />

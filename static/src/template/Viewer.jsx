@@ -1,13 +1,15 @@
 import React, { Component } from 'react';
 import isEmpty from 'lodash/isEmpty';
-
 import DownloadIcon from '@material-ui/icons/CloudDownload';
+import { ToastContainer, toast } from 'react-toastify';
+import 'react-toastify/dist/ReactToastify.css';
+
 
 import axios from 'axios';
 import UploadModal from './UploadModal';
 import Canvas from './Canvas';
 import SideBar from './SideBar';
-import JsonView from './JsonView';
+import SideEditor from './SideEditor';
 import JsonEdit from './JsonEdit';
 
 /* Viewer page for the schema interface. */
@@ -30,6 +32,7 @@ class Viewer extends Component {
         this.callbackFunction = this.callbackFunction.bind(this);
         this.jsonEditorCallback = this.jsonEditorCallback.bind(this);
         this.sidebarCallback = this.sidebarCallback.bind(this);
+        this.sideEditorCallback = this.sideEditorCallback.bind(this);
         this.download = this.download.bind(this);
 
     }
@@ -59,11 +62,11 @@ class Viewer extends Component {
     jsonEditorCallback(json){
         axios.post("/reload", json)
             .then(res => {
-                console.log('reload success')
+                toast.success('reload success')
                 this.callbackFunction(res.data);
             })
             .catch(err => {
-                console.error('reload fail:', err);
+                toast.error('reload fail:', err);
                 return false;
             });
     }
@@ -82,11 +85,21 @@ class Viewer extends Component {
         }
     }
 
+    sideEditorCallback(data) {
+        axios.post("/node", data)
+            .then(res => {
+                this.jsonEditorCallback(res.data);
+            })
+            .catch(err => {
+                toast.error('edit fail, check console', err);
+                return false;
+            });
+    }
+
     render() {
         let canvas = "";
         let schemaHeading = "";
         let jsonEdit = "";
-        let jsonViewer = "";
         let navEle = "";
         let sidebarClassName = this.state.isOpen ? "sidebar-open" : "sidebar-closed";
         let canvasClassName = this.state.isOpen ? "canvas-shrunk": "canvas-wide";
@@ -114,12 +127,6 @@ class Viewer extends Component {
                 schemaJson={this.state.schemaJson}
                 parentCallback={this.jsonEditorCallback}
             />
-
-            // json viewer
-            jsonViewer = <JsonView 
-                schemaJson={this.state.schemaJson} 
-                parentCallback={this.callbackFunction}
-            />;
         
         } else {
             if (navEle) {
@@ -130,6 +137,7 @@ class Viewer extends Component {
         return (
             <div id="viewer">
                 <div className='container'>
+                    <ToastContainer />
                     <UploadModal buttonLabel="Upload Schema" parentCallback={this.callbackFunction} />
                     <DownloadIcon className="button" type="button" color={this.state.isUpload ? "action" : "disabled"} onClick={this.download}/>
                     <a style={{display: "none"}}
@@ -140,13 +148,13 @@ class Viewer extends Component {
                 </div>
                 <div className="row">{schemaHeading}</div>
                 <div style={{display: 'inline-flex'}}>
-                    <SideBar
+                    <SideEditor
                         data={this.state.nodeData}
-                        isOpen={this.state.isOpen} 
+                        isOpen={this.state.isOpen}
+                        sideEditorCallback={this.sideEditorCallback}
                         className={sidebarClassName} />
                     {canvas}
                     {jsonEdit}
-                    {/* {jsonViewer} */}
                 </div>
             </div>
         )

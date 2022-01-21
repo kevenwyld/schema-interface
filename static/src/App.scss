@@ -66,22 +66,23 @@
 }
 
 .canvas-shrunk {
-    margin: 0 2vw;
+    margin: 0 1vw;
     width: 52vw !important;
 }
 
 .canvas-wide {
-    margin: 0 2vw;
+    margin: 0 1vw;
     width: 67vw !important;
 }
 
 .sidebar-open {
     width: 15vw;
-    height: 100%;
+    height: 75vh;
     padding: 1vw;
     transition: left .3s ease-in-out;
     border: 1px solid rgba(0, 0, 0, 0.2);
-    margin-left: 0;
+    overflow-y: auto;
+    margin-left: 0 1vw;
     background-color: #eee;
 }
 
@@ -94,9 +95,9 @@
 }
 
 #schema-json {
-    width: 25vw;
+    width: 28vw;
     height: 75vh;
-    margin: 0 2vw;
+    margin: 0 1vw;
     border: solid darkslateblue 2px;
     overflow-y: auto;
 }

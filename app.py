@@ -11,14 +11,11 @@ app = Flask(__name__, static_folder='./static', template_folder='./static')
 
 nodes = {}
 edges = []
-
-# TODO: handle multiple root nodes
+schemaJson = {}
 
 # SDF version 1.3
 schema_key_dict = {
-    'root': ['@id', 'name', 'comment', 'description', 'aka', 'qnode', 'qlabel', 'minDuration',
-             'maxDuration', 'goal', 'ta1explanation', 'importance', 'children_gate'],
-             # TODO: handle xor children_gates
+    'root': ['@id', 'name', 'comment', 'description', 'aka', 'qnode', 'qlabel', 'minDuration', 'maxDuration', 'goal', 'ta1explanation', 'importance', 'children_gate'],
     'participant': ['@id', 'roleName', 'entity'],
     'child': ['child', 'comment', 'optional', 'importance', 'outlinks', 'outlink_gate'],
     'privateData': ['@type', 'template', 'repeatable', 'importance']
@@ -100,6 +97,7 @@ def get_nodes_and_edges(schema):
     nodes = {}
     edges = []
     containers = []
+    parentless_xor = []
     
     for scheme in schema:
         # create event node
@@ -133,21 +131,25 @@ def get_nodes_and_edges(schema):
             nodes[scheme_id]['data']['_type'] = 'child'
             nodes[scheme_id]['data']['_shape'] = 'ellipse'
         # handle repeatable
-        if nodes[scheme_id]['data']['repeatable']:
+        if 'repeatable' in nodes[scheme_id]['data'] and nodes[scheme_id]['data']['repeatable']:
             edges.append(create_edge(scheme_id, scheme_id, _edge_type='child_outlink'))
 
         # participants
         if 'participants' in scheme:
             for participant in scheme['participants']:
-                _label = participant['roleName'].split('/')[-1].replace('_', '')
+                _label = participant['roleName'].split('/')[-1]
                 nodes[participant['@id']] = extend_node(create_node(participant['@id'], _label, 'participant', 'square'), participant)
                 
                 edges.append(create_edge(scheme_id, participant['@id'], _edge_type='step_participant'))
 
         # children
         if 'children' in scheme:
+            gate = 'or'
+            if nodes[scheme_id]['data']['children_gate'] == 'xor':
+                gate = 'xor'
+            elif nodes[scheme_id]['data']['children_gate'] == 'and':
+                gate = 'and'
             for child in scheme['children']:
-
                 child_id = child['child']
                 # node already exists
                 if child_id in nodes:
@@ -158,7 +160,19 @@ def get_nodes_and_edges(schema):
                 # new node
                 else:                    
                     nodes[child_id] = extend_node(create_node(child_id, child['comment'], 'child', 'ellipse'), child)
-                edges.append(create_edge(scheme_id, child_id, _edge_type='step_child'))
+
+                # handle xor gate
+                if gate == 'xor':
+                    xor_id = f'{scheme_id}xor'
+                    nodes[xor_id] = create_node(xor_id, 'XOR', 'gate', 'rectangle')
+                    edges.append(create_edge(xor_id, child_id, _edge_type='child_outlink'))
+                    if 'Container' in scheme_id:
+                        edges.append(create_edge(scheme_id, xor_id, _edge_type='child_outlink'))
+                        parentless_xor.append((xor_id, child_id))
+                    else:
+                        edges.append(create_edge(scheme_id, xor_id, _edge_type='step_child'))
+
+                edges.append(create_edge(scheme_id, child_id, _edge_type='child_outlink' if gate == 'and' else 'step_child'))
             
                 # check for outlinks
                 if len(child['outlinks']):
@@ -171,21 +185,36 @@ def get_nodes_and_edges(schema):
         # handle containers, ie. connect previous node to all their successors
         edges_to_remove = []
         for container in containers:
+            edge_type = False
+            source_id = False
             for edge in edges:
                 if 'searched' in edge['data'] and edge['data']['searched']:
                     continue
                 if edge['data']['target'] == container:
                     source_id = edge['data']['source']
-                    nodes[source_id]['data']['children_gate'] = nodes[container]['data']['children_gate']
-                    edges_to_remove.append(edge)
                     edge['data']['searched'] = True
+                    edges_to_remove.append(edge)
                 if edge['data']['source'] == container:
-                    edges.append(create_edge(source_id, edge['data']['target'], _edge_type='step_child'))
-                    edges_to_remove.append(edge)
+                    edge_type = edge['data']['_edge_type']
                     edge['data']['searched'] = True
+                if source_id and edge_type:
+                    edges_to_remove.append(edge)
+                    edges.append(create_edge(source_id, edge['data']['target'], _edge_type=edge_type))
+                    edge_type = False
 
         for index in edges_to_remove:
             edges.remove(index)
+
+        # give xor nodes a parent node they belong to
+        parent_found = []
+        for xor_id, child_id in parentless_xor:
+            if xor_id in parent_found:
+                continue
+            for edge in edges:
+                if edge['data']['target'] == child_id and edge['data']['_edge_type'] == 'step_child':
+                    edges.append(create_edge(edge['data']['source'], xor_id, _edge_type='step_child'))
+                    parent_found.append(xor_id)
+                    break
 
         # === are these two necessary? / what are these for ===
         # TODO: entities
@@ -203,6 +232,85 @@ def get_nodes_and_edges(schema):
         #                     nodes[obj] = create_node(obj, obj, 'participant', 'round-pentagon')
         
     return nodes, edges
+
+def update_json(values):
+    """Updates JSON with values.
+
+    Parameters:
+    values (dict): contains node id, key, and value to change key to.
+    e.g. {id: node_id, key: name, value: Test}
+
+    Returns:
+    schemaJson (dict): new JSON 
+    """
+    global schemaJson
+    new_json = schemaJson
+    node_id = values['id']
+    key = values['key']
+    new_value = values['value']
+    node_type = node_id.split('/')[0].split(':')[-1]
+    array_to_modify = False
+    isRoot = new_json['events'][0]['@id'] == node_id
+
+    # what key is it?
+    # special cases
+    if key in ['@id', 'child']:
+        key = '@id'
+        array_to_modify = 'id'
+    elif key == 'importance':
+        array_to_modify = 'importance'
+    elif key == 'name':
+        array_to_modify = 'name'
+    # look for the key in schema_key_dict
+    if not array_to_modify:
+        if node_type == 'Participants':
+            array_to_modify = 'participant'
+        else:
+            for keys in schema_key_dict:
+                if key in schema_key_dict[keys]:
+                    array_to_modify = keys
+                    break
+
+    # change schemaJson
+    for scheme in new_json['events']:
+        # scheme data
+        if scheme['@id'] == node_id:
+            if array_to_modify in ['root', 'name', 'privateData']:
+                if key in schema_key_dict['privateData']:
+                    scheme['privateData'][key] = new_value
+                    break
+                else:
+                    scheme[key] = new_value
+                    if key != 'name':
+                        break
+                if isRoot:
+                    break    
+            elif array_to_modify == 'importance':
+                if isRoot:
+                    scheme['privateData'][key] = new_value
+                    break
+            elif array_to_modify == 'id':
+                scheme[key] = new_value
+                if isRoot:
+                    break
+        # participant data
+        if array_to_modify in ['participant', 'id'] and 'participants' in scheme:
+            for participant in scheme['participants']:
+                if participant['@id'] == node_id:
+                    scheme[key] = new_value
+        # children data
+        if array_to_modify in ['child', 'id', 'name'] and 'children' in scheme:
+            for child in scheme['children']:
+                if child['child'] == node_id:
+                    if array_to_modify == 'name':
+                        child['comment'] = new_value
+                    elif array_to_modify == 'id':
+                        child['child'] = new_value
+                    else:
+                        child[key] = new_value
+
+    schemaJson = new_json
+    return schemaJson
 
 def get_connected_nodes(selected_node):
     """Constructs graph to be visualized by the viewer.
@@ -259,12 +367,14 @@ def homepage():
 
 @app.route('/upload', methods=['POST'])
 def upload():
+    """Uploads JSON and processes it for graph view."""
     file = request.files['file']
     schema_string = file.read().decode("utf-8")
-    schemaJson = json.loads(schema_string)
-    schema = schemaJson['events']
+    global schemaJson
     global nodes
     global edges
+    schemaJson = json.loads(schema_string)
+    schema = schemaJson['events']
     nodes, edges = get_nodes_and_edges(schema)
     schema_name = schema[0]['name']
     parsed_schema = get_connected_nodes('root')
@@ -274,23 +384,34 @@ def upload():
         'schemaJson': schemaJson
     })
 
-@app.route('/node', methods=['GET'])
-def get_subtree():
-    """Gets subtree of the selected node."""
+@app.route('/node', methods=['GET', 'POST'])
+def get_subtree_or_update_node():
     if not (bool(nodes) and bool(edges)):
         return 'Parsing error! Upload the file again.', 400
-    node_id = request.args.get('ID')
-    subtree = get_connected_nodes(node_id)
-    return json.dumps(subtree)
+
+    if request.method == 'GET':        
+        """Gets subtree of the selected node."""
+        node_id = request.args.get('ID')
+        subtree = get_connected_nodes(node_id)
+        return json.dumps(subtree)
+    # it won't work and i don't know why
+    else:
+        """Posts updates to selected node and reloads schema."""
+        values = json.loads(request.data.decode("utf-8"))
+        new_json = update_json(values)
+        return json.dumps(new_json)
+        
+
 
 @app.route('/reload', methods=['POST'])
 def reload_schema():
     """Reloads schema; does the same thing as upload."""
     schema_string = request.data.decode("utf-8")
-    schemaJson = json.loads(schema_string)
-    schema = schemaJson['events']
+    global schemaJson
     global nodes
     global edges
+    schemaJson = json.loads(schema_string)
+    schema = schemaJson['events']
     nodes, edges = get_nodes_and_edges(schema)
     schema_name = schema[0]['name']
     parsed_schema = get_connected_nodes('root')

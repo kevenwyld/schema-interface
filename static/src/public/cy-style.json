@@ -54,6 +54,12 @@
             }
         },
         {
+            "selector": "node[_type = 'gate']",
+            "style": {
+                "background-color": "#8ebf1d"
+            }
+        },
+        {
             "selector": "node:selected",
             "style": {
                 "background-color": "#00bfff"

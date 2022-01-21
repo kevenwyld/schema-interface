@@ -5,6 +5,7 @@ import ListItemText from '@material-ui/core/ListItemText';
 import Divider from '@material-ui/core/Divider';
 import isEmpty from 'lodash/isEmpty';
 
+import axios from 'axios';
 import Editable from './Editable';
 
 function SideEditor (props) {
@@ -19,16 +20,21 @@ function SideEditor (props) {
     const [data, setData] = useState(initData);
 
     useEffect (() => { 
-        setData({ ...data, propData: props.data }) 
+        setData({ ...data, propData: props.data}) 
     }, [props.data])
-    console.log(data)
     
     const handleUpdate = (e) => {
-        console.log('handle update');
-        console.log(e.target);
-        targetKey = e.target.name;
-        data.propData.targetKey = e.target.value; //targetKey undeclared variable
+        data.propData[e.target.name] = e.target.value;
         setData({...data});
+    }
+
+    const handleEdit = (e) => {
+        const node_data = {
+            id: data.propData['@id'],
+            key: e.target.name,
+            value: e.target.value
+        };
+        props.sideEditorCallback(node_data);
     }
 
     let i = 0;
@@ -36,7 +42,7 @@ function SideEditor (props) {
     
     return (
         <div className={props.className}>
-            {isEmpty(data.propData) ? 'empty' : 
+            {isEmpty(data.propData) ? '' : 
                 <List disablePadding dense>
                     {Object.entries(data.propData).map(([key, val]) => {
                         if (!excluded_ids.includes(key)) {
@@ -49,7 +55,7 @@ function SideEditor (props) {
                                             <div>{key.toUpperCase()}</div>
                                             <div>
                                             <Editable text={val} placeholder={val} type="input">
-                                                <input type="text" name={key} placeholder={val} value={val} onChange={e => handleUpdate(e, key)} />
+                                                <input type="text" name={key} placeholder={isEmpty(val) ? key : val} value={val} onChange={e => handleUpdate(e)} onBlur={e => handleEdit(e)}/>
                                             </Editable>
                                             </div>
                                         </ListItemText>

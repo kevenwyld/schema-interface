@@ -1,7 +1,9 @@
 import React, { Component } from 'react';
 import isEmpty from 'lodash/isEmpty';
-
 import DownloadIcon from '@material-ui/icons/CloudDownload';
+import { ToastContainer, toast } from 'react-toastify';
+import 'react-toastify/dist/ReactToastify.css';
+
 
 import axios from 'axios';
 import UploadModal from './UploadModal';
@@ -30,6 +32,7 @@ class Viewer extends Component {
         this.callbackFunction = this.callbackFunction.bind(this);
         this.jsonEditorCallback = this.jsonEditorCallback.bind(this);
         this.sidebarCallback = this.sidebarCallback.bind(this);
+        this.sideEditorCallback = this.sideEditorCallback.bind(this);
         this.download = this.download.bind(this);
 
     }
@@ -63,7 +66,7 @@ class Viewer extends Component {
                 this.callbackFunction(res.data);
             })
             .catch(err => {
-                console.error('reload fail:', err);
+                toast.error('reload fail:', err);
                 return false;
             });
     }
@@ -80,6 +83,29 @@ class Viewer extends Component {
                 nodeData: data
             });
         }
+    }
+
+    sideEditorCallback(data) {
+        console.log('sideEditorCallback in Viewer');
+        console.log(data);
+        axios.post("/node", data)
+            .then(res => {
+                console.log('edit complete')
+                console.log(res)
+                // axios.post("/reload", json)
+                //     .then(res => {
+                //         console.log('reload success')
+                //         this.callbackFunction(res.data);
+                //     })
+                //     .catch(err => {
+                //         toast.error('reload fail, check console', err);
+                //         return false;
+                //     });
+            })
+            .catch(err => {
+                toast.error('edit fail, check console', err);
+                return false;
+            });
     }
 
     render() {
@@ -123,6 +149,7 @@ class Viewer extends Component {
         return (
             <div id="viewer">
                 <div className='container'>
+                    <ToastContainer />
                     <UploadModal buttonLabel="Upload Schema" parentCallback={this.callbackFunction} />
                     <DownloadIcon className="button" type="button" color={this.state.isUpload ? "action" : "disabled"} onClick={this.download}/>
                     <a style={{display: "none"}}
@@ -139,7 +166,8 @@ class Viewer extends Component {
                         className={sidebarClassName} /> */}
                     <SideEditor
                         data={this.state.nodeData}
-                        isOpen={this.state.isOpen} 
+                        isOpen={this.state.isOpen}
+                        sideEditorCallback={this.sideEditorCallback}
                         className={sidebarClassName} />
                     {canvas}
                     {jsonEdit}

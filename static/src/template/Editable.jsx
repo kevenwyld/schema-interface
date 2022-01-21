@@ -1,6 +1,7 @@
 import React, { useState } from "react";
 
-// From https://github.com/learnwithparam/logrocket-inline-edit-ui/
+// From https://github.com/learnwithparam/logrocket-inline-edit-ui//
+// https://blog.logrocket.com/building-inline-editable-ui-in-react/
 const Editable = ({
     text,
     type,
@@ -14,7 +15,7 @@ const Editable = ({
     // Event handler while pressing any key while editing
     const handleKeyDown = (e) => {
         const keys = ["Escape", "Tab", "Enter"];
-        if (keys.indexOf({e}) > -1){
+        if (e in keys){
             setEditing(false);
         }
     };
@@ -27,13 +28,14 @@ const Editable = ({
                 onKeyDown={e => handleKeyDown(e)}
             >
                 {children}
+
             </div>
             ) : (
             <div
                 onClick={() => setEditing(true)}
             >
                 <span className={`${text ? "text-black" : "text-gray-500"}`}>
-                {text || placeholder || ""}
+                {text || placeholder || "___"}
                 </span>
             </div>
             )}

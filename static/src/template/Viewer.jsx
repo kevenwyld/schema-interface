@@ -62,7 +62,7 @@ class Viewer extends Component {
     jsonEditorCallback(json){
         axios.post("/reload", json)
             .then(res => {
-                console.log('reload success')
+                toast.success('reload success')
                 this.callbackFunction(res.data);
             })
             .catch(err => {
@@ -86,21 +86,9 @@ class Viewer extends Component {
     }
 
     sideEditorCallback(data) {
-        console.log('sideEditorCallback in Viewer');
-        console.log(data);
         axios.post("/node", data)
             .then(res => {
-                console.log('edit complete')
-                console.log(res)
-                // axios.post("/reload", json)
-                //     .then(res => {
-                //         console.log('reload success')
-                //         this.callbackFunction(res.data);
-                //     })
-                //     .catch(err => {
-                //         toast.error('reload fail, check console', err);
-                //         return false;
-                //     });
+                this.jsonEditorCallback(res.data);
             })
             .catch(err => {
                 toast.error('edit fail, check console', err);
@@ -160,10 +148,6 @@ class Viewer extends Component {
                 </div>
                 <div className="row">{schemaHeading}</div>
                 <div style={{display: 'inline-flex'}}>
-                    {/* <SideBar
-                        data={this.state.nodeData}
-                        isOpen={this.state.isOpen} 
-                        className={sidebarClassName} /> */}
                     <SideEditor
                         data={this.state.nodeData}
                         isOpen={this.state.isOpen}

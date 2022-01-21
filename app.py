@@ -11,6 +11,7 @@ app = Flask(__name__, static_folder='./static', template_folder='./static')
 
 nodes = {}
 edges = []
+schemaJson = {}
 
 # SDF version 1.3
 schema_key_dict = {
@@ -164,9 +165,12 @@ def get_nodes_and_edges(schema):
                 if gate == 'xor':
                     xor_id = f'{scheme_id}xor'
                     nodes[xor_id] = create_node(xor_id, 'XOR', 'gate', 'rectangle')
-                    edges.append(create_edge(scheme_id, xor_id, _edge_type='child_outlink'))
                     edges.append(create_edge(xor_id, child_id, _edge_type='child_outlink'))
-                    parentless_xor.append((xor_id, child_id))
+                    if 'Container' in scheme_id:
+                        edges.append(create_edge(scheme_id, xor_id, _edge_type='child_outlink'))
+                        parentless_xor.append((xor_id, child_id))
+                    else:
+                        edges.append(create_edge(scheme_id, xor_id, _edge_type='step_child'))
 
                 edges.append(create_edge(scheme_id, child_id, _edge_type='child_outlink' if gate == 'and' else 'step_child'))
             
@@ -229,6 +233,85 @@ def get_nodes_and_edges(schema):
         
     return nodes, edges
 
+def update_json(values):
+    """Updates JSON with values.
+
+    Parameters:
+    values (dict): contains node id, key, and value to change key to.
+    e.g. {id: node_id, key: name, value: Test}
+
+    Returns:
+    schemaJson (dict): new JSON 
+    """
+    global schemaJson
+    new_json = schemaJson
+    node_id = values['id']
+    key = values['key']
+    new_value = values['value']
+    node_type = node_id.split('/')[0].split(':')[-1]
+    array_to_modify = False
+    isRoot = new_json['events'][0]['@id'] == node_id
+
+    # what key is it?
+    # special cases
+    if key in ['@id', 'child']:
+        key = '@id'
+        array_to_modify = 'id'
+    elif key == 'importance':
+        array_to_modify = 'importance'
+    elif key == 'name':
+        array_to_modify = 'name'
+    # look for the key in schema_key_dict
+    if not array_to_modify:
+        if node_type == 'Participants':
+            array_to_modify = 'participant'
+        else:
+            for keys in schema_key_dict:
+                if key in schema_key_dict[keys]:
+                    array_to_modify = keys
+                    break
+
+    # change schemaJson
+    for scheme in new_json['events']:
+        # scheme data
+        if scheme['@id'] == node_id:
+            if array_to_modify in ['root', 'name', 'privateData']:
+                if key in schema_key_dict['privateData']:
+                    scheme['privateData'][key] = new_value
+                    break
+                else:
+                    scheme[key] = new_value
+                    if key != 'name':
+                        break
+                if isRoot:
+                    break    
+            elif array_to_modify == 'importance':
+                if isRoot:
+                    scheme['privateData'][key] = new_value
+                    break
+            elif array_to_modify == 'id':
+                scheme[key] = new_value
+                if isRoot:
+                    break
+        # participant data
+        if array_to_modify in ['participant', 'id'] and 'participants' in scheme:
+            for participant in scheme['participants']:
+                if participant['@id'] == node_id:
+                    scheme[key] = new_value
+        # children data
+        if array_to_modify in ['child', 'id', 'name'] and 'children' in scheme:
+            for child in scheme['children']:
+                if child['child'] == node_id:
+                    if array_to_modify == 'name':
+                        child['comment'] = new_value
+                    elif array_to_modify == 'id':
+                        child['child'] = new_value
+                    else:
+                        child[key] = new_value
+
+    schemaJson = new_json
+    return schemaJson
+
 def get_connected_nodes(selected_node):
     """Constructs graph to be visualized by the viewer.
 
@@ -284,12 +367,14 @@ def homepage():
 
 @app.route('/upload', methods=['POST'])
 def upload():
+    """Uploads JSON and processes it for graph view."""
     file = request.files['file']
     schema_string = file.read().decode("utf-8")
-    schemaJson = json.loads(schema_string)
-    schema = schemaJson['events']
+    global schemaJson
     global nodes
     global edges
+    schemaJson = json.loads(schema_string)
+    schema = schemaJson['events']
     nodes, edges = get_nodes_and_edges(schema)
     schema_name = schema[0]['name']
     parsed_schema = get_connected_nodes('root')
@@ -299,23 +384,34 @@ def upload():
         'schemaJson': schemaJson
     })
 
-@app.route('/node', methods=['GET'])
-def get_subtree():
-    """Gets subtree of the selected node."""
+@app.route('/node', methods=['GET', 'POST'])
+def get_subtree_or_update_node():
     if not (bool(nodes) and bool(edges)):
         return 'Parsing error! Upload the file again.', 400
-    node_id = request.args.get('ID')
-    subtree = get_connected_nodes(node_id)
-    return json.dumps(subtree)
+
+    if request.method == 'GET':        
+        """Gets subtree of the selected node."""
+        node_id = request.args.get('ID')
+        subtree = get_connected_nodes(node_id)
+        return json.dumps(subtree)
+    # it won't work and i don't know why
+    else:
+        """Posts updates to selected node and reloads schema."""
+        values = json.loads(request.data.decode("utf-8"))
+        new_json = update_json(values)
+        return json.dumps(new_json)
+        
+
 
 @app.route('/reload', methods=['POST'])
 def reload_schema():
     """Reloads schema; does the same thing as upload."""
     schema_string = request.data.decode("utf-8")
-    schemaJson = json.loads(schema_string)
-    schema = schemaJson['events']
+    global schemaJson
     global nodes
     global edges
+    schemaJson = json.loads(schema_string)
+    schema = schemaJson['events']
     nodes, edges = get_nodes_and_edges(schema)
     schema_name = schema[0]['name']
     parsed_schema = get_connected_nodes('root')

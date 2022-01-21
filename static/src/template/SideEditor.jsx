@@ -30,7 +30,7 @@ function SideEditor (props) {
 
     const handleEdit = (e) => {
         const node_data = {
-            id: data.propData['@id'],
+            id: data.propData['id'],
             key: e.target.name,
             value: e.target.value
         };
@@ -38,7 +38,7 @@ function SideEditor (props) {
     }
 
     let i = 0;
-    const excluded_ids = ['id', '_label', '_type', '_shape'];
+    const excluded_ids = ['id', '_label', '_type', '_shape', 'outlinks'];
     
     return (
         <div className={props.className}>

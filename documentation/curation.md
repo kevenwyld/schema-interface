@@ -1,13 +1,14 @@
-# Curation
-SDF v1.3 | Notes on curation fields and where to get them. Some descriptions from SDF documentation
+# Curation Fields
+SDF v1.4 | Notes on curation fields and where to get them. Some descriptions from SDF documentation
 ---
-- [Curation](#curation)
-  - [SDF v1.3 | Notes on curation fields and where to get them. Some descriptions from SDF documentation](#sdf-v13--notes-on-curation-fields-and-where-to-get-them-some-descriptions-from-sdf-documentation)
+- [Curation Fields](#curation-fields)
+  - [SDF v1.4 | Notes on curation fields and where to get them. Some descriptions from SDF documentation](#sdf-v14--notes-on-curation-fields-and-where-to-get-them-some-descriptions-from-sdf-documentation)
   - [Events](#events)
   - [Participants](#participants)
   - [Children](#children)
   - [Entities](#entities)
   - [Relations](#relations)
+- [Curation Timeline](#curation-timeline)
 
 ---
 Generally one event has at least 2 references in the JSON: as an event and as a child of some other event. The event reference gives more specific information about the event (node information), while the child reference simply links the event to its parent and its siblings (edge information).
@@ -56,3 +57,13 @@ Specifies event-event / entity-entity relations.
 - ⚠ `relationPredicate`: Wikidata q-node or p-node
 - ⚠ `relationObject`: @id reference to event / entity
 - ⚠ `@id`: `prefix:Relations/<unique-5-digit-number>`; the 5-digit number is unique per entity and belongs to the Relations list.
+
+---
+
+# Curation Timeline
+1. Obtain automatically induced SDF JSONs
+2. Check that the JSON has the necessary fields and is visualized correctly
+   - `children_gate` must be `or` to visualize a parent-child relationship
+   - all `child` lists require a `comment` that is a duplicate of the referenced event's `name`
+   - ⚠ Note that the JSON will not be visualized if there is no `comment` field in the `child` lists
+3. Add nodes and edges as required

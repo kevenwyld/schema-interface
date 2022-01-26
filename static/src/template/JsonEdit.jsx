@@ -3,14 +3,25 @@ import React, {Component} from 'react';
 import JSONEditor from 'jsoneditor';
 import 'jsoneditor/dist/jsoneditor.min.css';
 
-// TODO: be able to add empty string
-    // currently reloads whenever a key is pressed, change to onBlur somehow
 export default class JSONEdit extends Component {
+    constructor(props){
+        super(props);
+
+        this.handleEvent = this.handleEvent.bind(this);
+    }
+
+    // sends JSON back to Viewer when field is out of focus
+    handleEvent(node, event){
+        if (event.type === 'blur'){
+            this.props.parentCallback(this.jsoneditor.get());
+        }
+    }
+
     componentDidMount () {
         const options = {
             mode: 'tree',
             enableTransform: false,
-            onChangeJSON: this.props.parentCallback,
+            onEvent: this.handleEvent,
             templates: [
                 {
                     text: 'Event',

@@ -2,21 +2,21 @@ import React from 'react';
 import CytoscapeComponent from 'react-cytoscapejs';
 import cytoscape from 'cytoscape';
 import klay from 'cytoscape-klay';
+import contextMenus from 'cytoscape-context-menus'
 // want to use https://github.com/iVis-at-Bilkent/cytoscape.js-expand-collapse
 
 import axios from 'axios';
 import equal from 'fast-deep-equal';
 import RefreshIcon from '@material-ui/icons/Refresh';
+import OpenIcon from '@material-ui/icons/OpenWith';
 
 import Background from '../public/canvas_bg.png';
 import CyStyle from '../public/cy-style.json';
+import 'cytoscape-context-menus/cytoscape-context-menus.css';
 
-// TODO: add right-click menu
-// TODO: allow removing edges and nodes
-// TODO: add uncollapse without complete reload
-// add pan-zoom menu because it's hard to pinpoint the exact area of nodes
+// TODO: add uncollapse / unselect without complete reload
 cytoscape.use(klay);
-// cytoscape.use(contextMenus);
+cytoscape.use(contextMenus);
 
 /* Graph view of the data.
    Includes reload button. */
@@ -45,6 +45,7 @@ class Canvas extends React.Component {
         this.reloadCanvas = this.reloadCanvas.bind(this);
         this.removeObject = this.removeObject.bind(this);
         this.restore = this.restore.bind(this);
+        this.fitCanvas = this.fitCanvas.bind(this);
     }
 
     showSidebar(data) {
@@ -113,18 +114,23 @@ class Canvas extends React.Component {
         }
     }
 
+    fitCanvas(){
+        this.cy.fit();
+    }
+
     componentDidMount() {
         this.cy.ready(() => {
             // left-click 
             this.cy.on('tap', event => {
                 var eventTarget = event.target;
-                // click background, reset canvas
+                //click background
                 if (eventTarget === this.cy) {
-                    this.reloadCanvas();
+                    // do nothing
                 // click node, show subtree
                 } else if (eventTarget.isNode()) {
                     let node = eventTarget.data();
                     this.showSubTree(node);
+                    this.cy.center(node);
                 }
             });
 
@@ -140,115 +146,28 @@ class Canvas extends React.Component {
             })
 
             // right-click menu
-            // var contextMenu = this.cy.contextMenus({
-            //     menuItems: [
-            //         {
-            //             id: 'remove',
-            //             content: 'remove',
-            //             tooltipText: 'remove',
-            //             selector: 'node, edge',
-            //             onClickFunction: this.removeObject,
-            //             hasTrailingDivider: true
-            //         },
-            //         {
-            //             id: 'undo-last-remove',
-            //             content: 'undo last remove',
-            //             selector: 'node, edge',
-            //             disabled: this.state.removed ? true : false,
-            //             show: true,
-            //             coreAsWell: true,
-            //             onClickFunction: this.restore,
-            //             hasTrailingDivider: true
-            //         },
-            //         // {
-            //         //     id: 'add-node',
-            //         //     content: 'add node',
-            //         //     tooltipText: 'add node',
-            //         //     coreAsWell: true,
-            //         //     onClickFunction: function (event) {
-            //         //         var data = {
-            //         //             group: 'nodes'
-            //         //         };
-            
-            //         //         var pos = event.position || event.cyPosition;
-            
-            //         //         cy.add({
-            //         //             data: data,
-            //         //             position: {
-            //         //                 x: pos.x,
-            //         //                 y: pos.y
-            //         //             }
-            //         //         });
-            //         //     },
-            //         // },
-            //         // {
-            //         //     id: 'add-edge',
-            //         //     content: 'add edge',
-            //         //     tooltipText: 'add edge',
-            //         //     coreAsWell: true,
-            //         //     onClickFunction: function (event) {
-            //         //         var data = {
-            //         //             group: 'edges'
-            //         //         };
-            
-            //         //         var pos = event.position || event.cyPosition;
-            
-            //         //         cy.add({
-            //         //             data: data,
-            //         //             position: {
-            //         //                 x: pos.x,
-            //         //                 y: pos.y
-            //         //             }
-            //         //         });
-            //         //     },
-            //         //     hasTrailingDivider: true
-            //         // },
-            //         {
-            //             id: 'edit-node',
-            //             content: 'edit node',
-            //             tooltipText: 'edit node',
-            //             selector: 'node',
-            //             coreAsWell: true,
-            //             onClickFunction: function (event) {
-            //                 var data = {
-            //                     group: 'nodes'
-            //                 };
-            
-            //                 var pos = event.position || event.cyPosition;
-            
-            //                 cy.add({
-            //                     data: data,
-            //                     position: {
-            //                         x: pos.x,
-            //                         y: pos.y
-            //                     }
-            //                 });
-            //             },
-            //         },
-            //         {
-            //             id: 'edit-edge',
-            //             content: 'edit edge',
-            //             tooltipText: 'edit edge',
-            //             selector: 'edge',
-            //             coreAsWell: true,
-            //             onClickFunction: function (event) {
-            //                 var data = {
-            //                     group: 'edges'
-            //                 };
-            
-            //                 var pos = event.position || event.cyPosition;
-            
-            //                 cy.add({
-            //                     data: data,
-            //                     position: {
-            //                         x: pos.x,
-            //                         y: pos.y
-            //                     }
-            //                 });
-            //             },
-            //         }
-            //     ]   
-            //   })
+            var contextMenu = this.cy.contextMenus({
+                menuItems: [
+                    {
+                        id: 'remove',
+                        content: 'remove',
+                        tooltipText: 'remove',
+                        selector: 'node, edge',
+                        onClickFunction: this.removeObject,
+                        hasTrailingDivider: true
+                    },
+                    {
+                        id: 'undo-last-remove',
+                        content: 'undo last remove',
+                        selector: 'node, edge',
+                        disabled: this.state.removed ? true : false,
+                        show: true,
+                        coreAsWell: true,
+                        onClickFunction: this.restore,
+                        hasTrailingDivider: true
+                    }
+                ]
+            })
         })
     }
 
@@ -274,10 +193,11 @@ class Canvas extends React.Component {
                     style={style}
                     stylesheet={CyStyle.stylesheet}
                     cy={(cy) => { this.cy = cy }}
-                    wheelSensitivity={0.5} maxZoom={2} minZoom={0.5}
+                    maxZoom={3} minZoom={0.5}
                 />
                 <div style={{'width': '15px', height: '3vh'}}>
                     <RefreshIcon type='button' color="action" fontSize='large' onClick={this.reloadCanvas}/>
+                    <OpenIcon type='button' color="action" fontSize='large' onClick={this.fitCanvas}/>
                 </div>
             </div>
         );

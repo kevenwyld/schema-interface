@@ -2,7 +2,7 @@ import React from "react";
 import { Row, Col } from 'reactstrap';
 import {
   BrowserRouter as Router,
-  Switch,
+  Routes,
   Route,
   Link
 } from "react-router-dom";
@@ -46,17 +46,11 @@ export default function App() {
           </Col>
         </Row>
 
-        <Switch>
-          <Route path="/viewer">
-            <Viewer />
-          </Route>
-          <Route path="/compare">
-            <Compare />
-          </Route>
-          <Route path="/">
-            <Home />
-          </Route>
-        </Switch>
+        <Routes>
+          <Route exact path="/viewer" element={<Viewer />} />
+          <Route exact path="/compare" element={<Compare />} />
+          <Route exact path="/" element={<Home />}/>
+        </Routes>
       </div>
     </Router>
   );

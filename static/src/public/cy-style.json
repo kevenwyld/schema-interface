@@ -124,10 +124,9 @@
     "layout": {
         "name": "klay",
         "nodeDimensionsIncludeLabels": false,
-        "fit": true,
+        "fit": false,
         "padding": 20,
         "animate": false,
-        "animationDuration": 500,
         "klay": {
             "addUnnecessaryBendpoints": false,
             "aspectRatio": 1.6,

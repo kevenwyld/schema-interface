@@ -28,7 +28,7 @@ export default class JSONEdit extends Component {
                     title: 'Insert an Event Node',
                     field: '',
                     value: {
-                        '@id': 'resin:Events/10000/resin:Events_',
+                        '@id': 'Events/10000/Event',
                         'name': 'Event Name',
                         'comment': 'description',
                         'qnode': 'Q1234567',
@@ -53,9 +53,9 @@ export default class JSONEdit extends Component {
                     title: 'Insert Participant',
                     field: '',
                     value: {
-                        '@id': 'resin:Participants/20000/kairos:Primitives_Events_Disaster.Diseaseoutbreak.Unspecified:1_entity',
+                        '@id': 'Participants/20000/Participant',
                         'roleName': 'consult_XPO',
-                        'entity': 'resin:Entities/00001/'
+                        'entity': 'Entities/00001/'
                     }
                 },
                 {
@@ -63,7 +63,7 @@ export default class JSONEdit extends Component {
                     title: 'Insert Child',
                     field: '',
                     value: {
-                        'child': 'resin:Events/10023/Steps_kairos',
+                        'child': 'Events/10023/Steps_kairos',
                         'comment': 'name',
                         'optional': false,
                         'importance': 1,
@@ -72,6 +72,28 @@ export default class JSONEdit extends Component {
                             'outlink',
                             'outlink'
                         ]
+                    }
+                },
+                {
+                    text: 'Entity',
+                    title: 'Insert Entity',
+                    field: '',
+                    value: {
+                        'child': 'Entities/00023/',
+                        'comment': 'name',
+                        'qnode': 'Q1234567',
+                        'qlabel': 'qlabel'
+                    }
+                },
+                {
+                    text: 'Relation',
+                    title: 'Insert Relation',
+                    field: '',
+                    value: {
+                        'relationSubject': 'Entities/00023/',
+                        'relationPredicate': 'Q1234567',
+                        'relationObject': 'Entities/00023/',
+                        '@id': 'Relations/30000/'
                     }
                 }
             ]

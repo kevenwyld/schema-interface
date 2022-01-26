@@ -5,4 +5,4 @@ venv
 env
 dist
 temp.txt
-scratch.py
+scripts/

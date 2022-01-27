@@ -67,11 +67,7 @@ export default class JSONEdit extends Component {
                         'comment': 'name',
                         'optional': false,
                         'importance': 1,
-                        'outlinks': [
-                            'outlink',
-                            'outlink',
-                            'outlink'
-                        ]
+                        'outlinks': []
                     }
                 },
                 {
@@ -79,10 +75,11 @@ export default class JSONEdit extends Component {
                     title: 'Insert Entity',
                     field: '',
                     value: {
-                        'child': 'Entities/00023/',
-                        'comment': 'name',
+                        '@id': 'Entities/00023/',
+                        'name': 'name',
                         'qnode': 'Q1234567',
-                        'qlabel': 'qlabel'
+                        'qlabel': 'qlabel',
+                        'centrality': 1
                     }
                 },
                 {

@@ -24,7 +24,7 @@ export default function App() {
           </Col>
           <Col md="4" id="title" className="align-self-center">
             <div><h1>CURATE</h1></div>
-            <div><h4 >Schema Curation interface</h4></div>
+            <div><h4 >Schema Curation Interface</h4></div>
           </Col>
           <Col md="6" className="align-self-center">
             <Row>
@@ -34,9 +34,9 @@ export default function App() {
               <Col md="3" className="nav-items">
                 <Link to="/viewer">Viewer</Link>
               </Col>
-              <Col md="3" className="nav-items">
+              {/* <Col md="3" className="nav-items">
                 <Link to="/compare">Compare</Link>
-              </Col>
+              </Col> */}
               <Col md="3" className="nav-items">
                 <a target="_blank" href="https://github.com/cu-clear/schema-interface">
                   Github
@@ -48,7 +48,7 @@ export default function App() {
 
         <Routes>
           <Route exact path="/viewer" element={<Viewer />} />
-          <Route exact path="/compare" element={<Compare />} />
+          {/* <Route exact path="/compare" element={<Compare />} /> */}
           <Route exact path="/" element={<Home />}/>
         </Routes>
       </div>

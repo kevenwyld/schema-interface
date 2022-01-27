@@ -16,14 +16,14 @@ To run the project locally one needs to have following libraries installed:
 
 First run:
 
-* cd path/to/project/schema-interface
-* sh first_run.sh
-* _If rendering fails_: sh run_local.sh 
+* `cd path/to/project/schema-interface`
+* `sh first_run.sh`
+* If rendering fails: `sh run_local.sh` 
 
 Subsequent runs:
 
-* cd path/to/project/schema-interface
-* sh run_local.sh
+* `cd path/to/project/schema-interface`
+* `sh run_local.sh`
 
 Once the server has started, run the localhost with the port mentioned in the terminal in the browser. The tool will render.
 

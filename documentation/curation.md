@@ -66,4 +66,8 @@ Specifies event-event / entity-entity relations.
    - `children_gate` must be `or` to visualize a parent-child relationship
    - all `child` lists require a `comment` that is a duplicate of the referenced event's `name`
    - ⚠ Note that the JSON will not be visualized if there is no `comment` field in the `child` lists
-3. Add nodes and edges as required
+3. Preliminary curation
+   - Double-check names and Qnodes/labels
+   - Adjust participants according to XPO overlay
+   - Check entities accordingly
+4. 

@@ -80,9 +80,10 @@ export default class JSONEdit extends Component {
                     field: '',
                     value: {
                         'child': 'Entities/00023/',
-                        'comment': 'name',
+                        'name': 'name',
                         'qnode': 'Q1234567',
-                        'qlabel': 'qlabel'
+                        'qlabel': 'qlabel',
+                        'centrality': 1.0
                     }
                 },
                 {

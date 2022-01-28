@@ -77,7 +77,7 @@ def extend_node(node, obj):
                 node['classes'] = 'optional'
             else:
                 node['data'][key] = obj[key]
-    if 'privateData' in obj.keys():
+    if 'privateData' in obj.keys() and len(obj['privateData']) > 0:
         for key in obj['privateData'].keys():
             if key in schema_key_dict['privateData']:
                 node['data'][key] = obj['privateData'][key]

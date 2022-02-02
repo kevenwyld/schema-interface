@@ -1,5 +1,5 @@
 import React, { Component } from 'react';
-import { Button, Modal, ModalHeader, ModalBody, ModalFooter, Progress, Input, Label, Form,FormGroup } from 'reactstrap';
+import { Button, Modal, ModalHeader, ModalBody, ModalFooter, Input, Label, Form, FormGroup } from 'reactstrap';
 import { ToastContainer, toast } from 'react-toastify';
 import 'react-toastify/dist/ReactToastify.css';
 
@@ -14,7 +14,6 @@ class UploadModal extends Component {
     this.state = {
       modal: false,
       selectedFile: null,
-      loaded: 0,
       valid: false
     }
     this.toggle = this.toggle.bind(this);
@@ -29,7 +28,6 @@ class UploadModal extends Component {
     this.setState({
       modal: !this.state.modal,
       selectedFile: null,
-      loaded: 0,
       valid: false
     })
   }
@@ -110,7 +108,6 @@ class UploadModal extends Component {
       // if return true allow to setState
       this.setState({
         selectedFile: files,
-        loaded: 0,
         valid: true
       });
     } else {
@@ -130,21 +127,17 @@ class UploadModal extends Component {
     for (var x = 0; x < this.state.selectedFile.length; x++) {
       data.append('file', this.state.selectedFile[x]);
     }
-    axios.post("/upload", data, {
-      onUploadProgress: ProgressEvent => {
-        this.setState({
-          loaded: (ProgressEvent.loaded / ProgressEvent.total * 100),
-        })
-      }
-    })
+    axios.post("/upload", data)
       .then(res => { // then print response status
         this.props.parentCallback(res.data)
-        toast.success('upload success');
+        toast.success('Upload success');
         setTimeout(this.toggle, 1000);
       })
       .catch(err => { // then print response status
         this.setState({ valid: false });
-        toast.error('upload fail, check console');
+        let error = err.response.data;
+        let error_title = error.slice(error.indexOf("<title>")+7, error.lastIndexOf("</title>"));
+        toast.error(error_title.slice(0, error_title.indexOf("//")));
       });
   }
 
@@ -153,7 +146,6 @@ class UploadModal extends Component {
     Opens up a sub window when Upload Schema button is pressed,
     where you can upload a file or cancel.
     Checks the validity of the file.
-    Upon pressing upload, shows an upload progress bar.
     */
     
     const openModal = () => {
@@ -169,7 +161,7 @@ class UploadModal extends Component {
           </Button>
         </div>
         <Modal isOpen={this.state.modal} toggle={this.toggle} className={this.props.className}>
-          <ToastContainer />
+          <ToastContainer theme="colored" />
           <ModalHeader toggle={this.toggle}>Upload Schema</ModalHeader>
 
           <ModalBody>
@@ -177,11 +169,6 @@ class UploadModal extends Component {
               <FormGroup className="files">
                 <Label>Upload Your File</Label>
                 <Input type="file" className="form-control" style={{height: 'auto'}} onChange={this.onChangeHandler} />
-              </FormGroup>
-
-              <FormGroup>
-                <Progress max="100" color={this.state.valid ? "success":"danger"}
-                  value={this.state.loaded} transition="width 1s ease-in-out" >{Math.round(this.state.loaded, 2)}%</Progress>
               </FormGroup>
             </Form>
           </ModalBody>

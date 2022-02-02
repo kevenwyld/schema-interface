@@ -18,7 +18,7 @@ First run:
 
 * `cd path/to/project/schema-interface`
 * `sh first_run.sh`
-* If rendering fails: `sh run_local.sh`
+* If rendering fails: `sh run_local.sh` 
 
 Subsequent runs:
 

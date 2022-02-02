@@ -8,7 +8,6 @@ import 'react-toastify/dist/ReactToastify.css';
 import axios from 'axios';
 import UploadModal from './UploadModal';
 import Canvas from './Canvas';
-import SideBar from './SideBar';
 import SideEditor from './SideEditor';
 import JsonEdit from './JsonEdit';
 
@@ -38,6 +37,7 @@ class Viewer extends Component {
     }
 
     callbackFunction(response) {
+        /* Updates back-end data */
         this.setState({ 
             schemaResponse: Object.assign({}, response.parsedSchema),
             schemaName: response.name,
@@ -47,6 +47,7 @@ class Viewer extends Component {
     }
 
     download(event){
+        /* Handles downloading the schema JSON */
         event.preventDefault();
         const output = JSON.stringify(this.state.schemaJson, null, 4)
         const blob = new Blob([output], {type: 'application/json'});
@@ -60,18 +61,23 @@ class Viewer extends Component {
     }
 
     jsonEditorCallback(json){
+        /* Handles changes from the JSON editor */
         axios.post("/reload", json)
             .then(res => {
-                toast.success('reload success')
+                toast.success('Reload success')
                 this.callbackFunction(res.data);
             })
             .catch(err => {
-                toast.error('reload fail:', err);
+                let error = err.response.data;
+                let error_title = error.slice(error.indexOf("<title>")+7, error.lastIndexOf("</title>"));
+                let error_notif = error_title.slice(0, error_title.indexOf("//"));
+                toast.error(error_notif);
                 return false;
             });
     }
 
     sidebarCallback(data) {
+        /* Opens / closes the sidebar */
         if (isEmpty(data)) {
             this.setState({
                 isOpen: false,
@@ -86,12 +92,16 @@ class Viewer extends Component {
     }
 
     sideEditorCallback(data) {
+        /* Handles changes through the sidebar */
         axios.post("/node", data)
             .then(res => {
                 this.jsonEditorCallback(res.data);
             })
             .catch(err => {
-                toast.error('edit fail, check console', err);
+                let error = err.response.data;
+                let error_title = error.slice(error.indexOf("<title>")+7, error.lastIndexOf("</title>"));
+                let error_notif = error_title.slice(0, error_title.indexOf("//"));
+                toast.error(error_notif);
                 return false;
             });
     }
@@ -137,7 +147,7 @@ class Viewer extends Component {
         return (
             <div id="viewer">
                 <div className='container'>
-                    <ToastContainer />
+                    <ToastContainer theme="colored"/>
                     <UploadModal buttonLabel="Upload Schema" parentCallback={this.callbackFunction} />
                     <DownloadIcon className="button" type="button" color={this.state.isUpload ? "action" : "disabled"} onClick={this.download}/>
                     <a style={{display: "none"}}

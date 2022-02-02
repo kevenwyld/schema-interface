@@ -13,7 +13,7 @@ nodes = {}
 edges = []
 schemaJson = {}
 
-# SDF version 1.3
+# SDF version 1.4
 schema_key_dict = {
     'root': ['@id', 'name', 'comment', 'description', 'aka', 'qnode', 'qlabel', 'minDuration', 'maxDuration', 'goal', 'ta1explanation', 'importance', 'children_gate'],
     'participant': ['@id', 'roleName', 'entity'],
@@ -394,7 +394,6 @@ def get_subtree_or_update_node():
         node_id = request.args.get('ID')
         subtree = get_connected_nodes(node_id)
         return json.dumps(subtree)
-    # it won't work and i don't know why
     else:
         """Posts updates to selected node and reloads schema."""
         values = json.loads(request.data.decode("utf-8"))

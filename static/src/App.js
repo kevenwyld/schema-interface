@@ -9,8 +9,9 @@ import {
 
 import Home from "./template/Home";
 import Viewer from "./template/Viewer";
-import Compare from "./template/Compare";
 import logo from './public/logo.png'
+import GitHubIcon from '@material-ui/icons/GitHub';
+import HelpIcon from '@material-ui/icons/Help';
 
 import './App.scss'
 
@@ -34,22 +35,23 @@ export default function App() {
               <Col md="3" className="nav-items">
                 <Link to="/viewer">Viewer</Link>
               </Col>
-              {/* <Col md="3" className="nav-items">
-                <Link to="/compare">Compare</Link>
-              </Col> */}
               <Col md="3" className="nav-items">
                 <a target="_blank" href="https://github.com/cu-clear/schema-interface">
-                  Github
-                  </a>
+                  <img src={GitHubIcon} alt="GitHub" />
+                </a>
+              </Col>
+              <Col md="3" className="nav-items">
+                <a target="_blank" href="https://chrysographes.notion.site/Schema-Curation-Manual-c17f79c7450246d3ad7796e43bebea1b">
+                  <img src={HelpIcon} alt="Manual" />
+                </a>
               </Col>
             </Row>
           </Col>
         </Row>
 
         <Routes>
-          <Route exact path="/viewer" element={<Viewer />} />
-          {/* <Route exact path="/compare" element={<Compare />} /> */}
           <Route exact path="/" element={<Home />}/>
+          <Route exact path="/viewer" element={<Viewer />} />
         </Routes>
       </div>
     </Router>

@@ -25,22 +25,33 @@ export default class JSONEdit extends Component {
             templates: [
                 {
                     text: 'Event',
-                    title: 'Insert an Event Node',
+                    title: 'Insert Event',
                     field: '',
                     value: {
                         '@id': 'Events/10000/Event',
                         'name': 'Event Name',
-                        'comment': 'description',
-                        'qnode': 'Q1234567',
-                        'qlabel': 'qnode',
+                        'description': '',
+                        'qnode': 'wd:Q1234567',
+                        'qlabel': 'qnode name',
                         'participants': [],
-                        'minDuration': '',
-                        'maxDuration': '',
-                        'description': 'description',
-                        'goal': '',
                         'ta1explanation': '',
-                        'children': [],
+                        'privateData': {
+                            '@type': '',
+                            'template': '',
+                            'repeatable': false
+                        }
+                    }
+                },
+                {
+                    text: 'Container',
+                    title: 'Insert Container',
+                    field: '',
+                    value: {
+                        '@id': 'Events/10000/Event:Container',
+                        'name': 'Event outlinks',
+                        'comment': 'container node',
                         'children_gate': 'or',
+                        'children': [],
                         'privateData': {
                             '@type': '',
                             'template': '',
@@ -59,11 +70,20 @@ export default class JSONEdit extends Component {
                     }
                 },
                 {
+                    text: 'Children',
+                    title: 'Insert Children',
+                    field: '',
+                    value: {
+                        'children_gate': 'or',
+                        'children': [],
+                    }
+                },
+                {
                     text: 'Child',
                     title: 'Insert Child',
                     field: '',
                     value: {
-                        'child': 'Events/10023/Steps_kairos',
+                        'child': 'Events/10000/Event',
                         'comment': 'name',
                         'optional': false,
                         'importance': 1,
@@ -75,11 +95,10 @@ export default class JSONEdit extends Component {
                     title: 'Insert Entity',
                     field: '',
                     value: {
-                        '@id': 'Entities/00023/',
+                        '@id': 'Entities/00000/',
                         'name': 'name',
-                        'qnode': 'Q1234567',
-                        'qlabel': 'qlabel',
-                        'centrality': 1
+                        'qnode': 'wd:Q1234567',
+                        'qlabel': 'qlabel'
                     }
                 },
                 {
@@ -87,9 +106,9 @@ export default class JSONEdit extends Component {
                     title: 'Insert Relation',
                     field: '',
                     value: {
-                        'relationSubject': 'Entities/00023/',
-                        'relationPredicate': 'Q1234567',
-                        'relationObject': 'Entities/00023/',
+                        'relationSubject': 'Entities/00000/',
+                        'relationPredicate': 'wd:Q1234567',
+                        'relationObject': 'Entities/00000/',
                         '@id': 'Relations/30000/'
                     }
                 }

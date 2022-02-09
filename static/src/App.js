@@ -40,11 +40,6 @@ export default function App() {
                   <img src={GitHubIcon} alt="GitHub" />
                 </a>
               </Col>
-              <Col md="3" className="nav-items">
-                <a target="_blank" href="https://chrysographes.notion.site/Schema-Curation-Manual-c17f79c7450246d3ad7796e43bebea1b">
-                  <img src={HelpIcon} alt="Manual" />
-                </a>
-              </Col>
             </Row>
           </Col>
         </Row>

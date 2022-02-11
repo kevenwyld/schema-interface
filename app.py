@@ -96,8 +96,7 @@ def get_nodes_and_edges(schema):
     """
     nodes = {}
     edges = []
-    containers = []
-    parentless_xor = []
+    containers_to_remove = []
     
     for scheme in schema:
         # create event node
@@ -112,9 +111,9 @@ def get_nodes_and_edges(schema):
             # change type back
             if 'children' not in scheme:
                 nodes[scheme_id]['data']['_type'] = 'child'
-            elif 'outlinks' in nodes[scheme_id]['data']['name']:
+            elif 'outlinks' in nodes[scheme_id]['data']['name'].lower():
                 nodes[scheme_id]['data']['_type'] = 'container'
-                containers.append(scheme_id)
+                containers_to_remove.append(scheme_id)
             else:
                 nodes[scheme_id]['data']['_type'] = 'parent'
                 nodes[scheme_id]['data']['_shape'] = 'diamond'
@@ -122,6 +121,7 @@ def get_nodes_and_edges(schema):
         else:
             nodes[scheme_id] = extend_node(create_node(scheme_id, _label, 'root', 'diamond'), scheme)
 
+        # TODO: imperfect solution; find root node by finding a node without a parent instead in later traversal
         if '@type' in nodes[scheme_id]['data']:
             # not root node, change node type
             nodes[scheme_id]['data']['_type'] = 'parent'
@@ -161,18 +161,15 @@ def get_nodes_and_edges(schema):
                 else:                    
                     nodes[child_id] = extend_node(create_node(child_id, child['comment'], 'child', 'ellipse'), child)
 
-                # handle xor gate
+                # handle xor gate... or just add edges
                 if gate == 'xor':
                     xor_id = f'{scheme_id}xor'
                     nodes[xor_id] = create_node(xor_id, 'XOR', 'gate', 'rectangle')
+                    # xor gate -> children edges
                     edges.append(create_edge(xor_id, child_id, _edge_type='child_outlink'))
-                    if 'Container' in scheme_id:
-                        edges.append(create_edge(scheme_id, xor_id, _edge_type='child_outlink'))
-                        parentless_xor.append((xor_id, child_id))
-                    else:
-                        edges.append(create_edge(scheme_id, xor_id, _edge_type='step_child'))
-
-                edges.append(create_edge(scheme_id, child_id, _edge_type='child_outlink' if gate == 'and' else 'step_child'))
+                    edges.append(create_edge(scheme_id, xor_id, _edge_type='step_child'))
+                else:
+                    edges.append(create_edge(scheme_id, child_id, _edge_type='child_outlink' if gate == 'and' else 'step_child'))
             
                 # check for outlinks
                 if len(child['outlinks']):
@@ -182,39 +179,40 @@ def get_nodes_and_edges(schema):
                             nodes[outlink] = create_node(outlink, _label, 'child', 'ellipse')
                         edges.append(create_edge(child_id, outlink, _edge_type='child_outlink'))
 
-        # handle containers, ie. connect previous node to all their successors
+        # handle containers to remove
         edges_to_remove = []
-        for container in containers:
-            edge_type = False
-            source_id = False
+        for container in containers_to_remove:
+            in_edges = []
+            out_edges = []
+            parent_edge = ['', '']
+            # find all edges connected to the container
             for edge in edges:
-                if 'searched' in edge['data'] and edge['data']['searched']:
-                    continue
                 if edge['data']['target'] == container:
-                    source_id = edge['data']['source']
-                    edge['data']['searched'] = True
+                    if edge['data']['_edge_type'] == 'step_child':
+                        parent_edge[0] = edge['data']['source']
+                    else:
+                        in_edges.append(edge['data']['source'])
                     edges_to_remove.append(edge)
                 if edge['data']['source'] == container:
-                    edge_type = edge['data']['_edge_type']
-                    edge['data']['searched'] = True
-                if source_id and edge_type:
+                    if edge['data']['_edge_type'] == 'step_child':
+                        parent_edge[1] = edge['data']['target']
+                    out_edges.append(edge['data']['target'])
                     edges_to_remove.append(edge)
-                    edges.append(create_edge(source_id, edge['data']['target'], _edge_type=edge_type))
-                    edge_type = False
-
+            # add hierarchical edge
+            if parent_edge[1]:
+                edges.append(create_edge(parent_edge[0], parent_edge[1], _edge_type='step_child'))
+            # move other edges
+            # 1-to-many
+            if len(in_edges) == 1:
+                for out in out_edges:
+                    edges.append(create_edge(in_edges[0], out, _edge_type='child_outlink'))
+            # many-to-1
+            else:
+                for edge in in_edges:
+                    edges.append(create_edge(edge, out_edges[0], _edge_type='child_outlink'))
+            
         for index in edges_to_remove:
             edges.remove(index)
-
-        # give xor nodes a parent node they belong to
-        parent_found = []
-        for xor_id, child_id in parentless_xor:
-            if xor_id in parent_found:
-                continue
-            for edge in edges:
-                if edge['data']['target'] == child_id and edge['data']['_edge_type'] == 'step_child':
-                    edges.append(create_edge(edge['data']['source'], xor_id, _edge_type='step_child'))
-                    parent_found.append(xor_id)
-                    break
 
         # === are these two necessary? / what are these for ===
         # TODO: entities

@@ -8,7 +8,8 @@ import contextMenus from 'cytoscape-context-menus'
 import axios from 'axios';
 import equal from 'fast-deep-equal';
 import RefreshIcon from '@material-ui/icons/Refresh';
-import OpenIcon from '@material-ui/icons/OpenWith';
+import AspectRatioIcon from '@material-ui/icons/AspectRatio';
+import PhotoIcon from '@material-ui/icons/Photo';
 
 import Background from '../public/canvas_bg.png';
 import CyStyle from '../public/cy-style.json';
@@ -28,7 +29,9 @@ class Canvas extends React.Component {
             hasSubtree: false,
             // static copy of topmost tree
             topTree: null,
-            removed: null
+            removed: null, 
+            downloadUrl: '',
+            fileName: 'graph.jpg'
         }
 
         // create topTree
@@ -46,6 +49,7 @@ class Canvas extends React.Component {
         this.removeObject = this.removeObject.bind(this);
         this.restore = this.restore.bind(this);
         this.fitCanvas = this.fitCanvas.bind(this);
+        this.download = this.download.bind(this);
     }
 
     showSidebar(data) {
@@ -68,6 +72,7 @@ class Canvas extends React.Component {
                 }
                 this.setState({hasSubtree: true});
                 this.cy.add(res.data);
+                this.cy.center(res.data);
                 this.runLayout();
             })
             .catch(err => {
@@ -118,6 +123,18 @@ class Canvas extends React.Component {
         this.cy.fit();
     }
 
+    download(event){
+        event.preventDefault();
+        const image = this.cy.jpg({output: 'blob'});
+        const url = URL.createObjectURL(image);
+        this.setState({downloadUrl: url},
+            () => {
+                this.dofileDownload.click();
+                URL.revokeObjectURL(url);
+                this.setState({downloadUrl: ''})
+        })
+    }
+
     componentDidMount() {
         this.cy.ready(() => {
             // left-click 
@@ -130,7 +147,6 @@ class Canvas extends React.Component {
                 } else if (eventTarget.isNode()) {
                     let node = eventTarget.data();
                     this.showSubTree(node);
-                    this.cy.center(node);
                 }
             });
 
@@ -197,7 +213,13 @@ class Canvas extends React.Component {
                 />
                 <div style={{'width': '15px', height: '3vh'}}>
                     <RefreshIcon type='button' color="action" fontSize='large' onClick={this.reloadCanvas}/>
-                    <OpenIcon type='button' color="action" fontSize='large' onClick={this.fitCanvas}/>
+                    <AspectRatioIcon type='button' color="action" fontSize='large' onClick={this.fitCanvas}/>
+                    <PhotoIcon className="button" type="button" color="action" onClick={this.download}/>
+                    <a style={{display: "none"}}
+                        download={this.state.fileName}
+                        href={this.state.downloadUrl}
+                        ref={e=>this.dofileDownload = e}
+                    >download it</a>
                 </div>
             </div>
         );

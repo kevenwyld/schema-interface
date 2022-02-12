@@ -1,11 +1,12 @@
 import React, { useEffect, useState } from "react";
-import List from '@material-ui/core/List';
-import ListItem from '@material-ui/core/ListItem';
-import ListItemText from '@material-ui/core/ListItemText';
-import Divider from '@material-ui/core/Divider';
+import {
+    List,
+    ListItem,
+    ListItemText,
+    Divider
+} from '@mui/material/';
 import isEmpty from 'lodash/isEmpty';
 
-import axios from 'axios';
 import Editable from './Editable';
 
 function SideEditor (props) {

@@ -7,9 +7,9 @@ import contextMenus from 'cytoscape-context-menus'
 
 import axios from 'axios';
 import equal from 'fast-deep-equal';
-import RefreshIcon from '@material-ui/icons/Refresh';
-import AspectRatioIcon from '@material-ui/icons/AspectRatio';
-import PhotoIcon from '@material-ui/icons/Photo';
+import RefreshIcon from '@mui/icons-material/Refresh';
+import AspectRatioIcon from '@mui/icons-material/AspectRatio';
+import SaveIcon from '@mui/icons-material/Save';
 
 import Background from '../public/canvas_bg.png';
 import CyStyle from '../public/cy-style.json';
@@ -31,7 +31,7 @@ class Canvas extends React.Component {
             topTree: null,
             removed: null, 
             downloadUrl: '',
-            fileName: 'graph.jpg'
+            fileName: 'graph.png'
         }
 
         // create topTree
@@ -125,7 +125,7 @@ class Canvas extends React.Component {
 
     download(event){
         event.preventDefault();
-        const image = this.cy.jpg({output: 'blob'});
+        const image = this.cy.png({output: 'blob', bg: 'white', scale:'1'});
         const url = URL.createObjectURL(image);
         this.setState({downloadUrl: url},
             () => {
@@ -214,7 +214,7 @@ class Canvas extends React.Component {
                 <div style={{'width': '15px', height: '3vh'}}>
                     <RefreshIcon type='button' color="action" fontSize='large' onClick={this.reloadCanvas}/>
                     <AspectRatioIcon type='button' color="action" fontSize='large' onClick={this.fitCanvas}/>
-                    <PhotoIcon className="button" type="button" color="action" onClick={this.download}/>
+                    <SaveIcon className="button" type="button" color="action" onClick={this.download}/>
                     <a style={{display: "none"}}
                         download={this.state.fileName}
                         href={this.state.downloadUrl}

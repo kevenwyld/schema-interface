@@ -125,7 +125,7 @@ class Canvas extends React.Component {
 
     download(event){
         event.preventDefault();
-        const image = this.cy.png({output: 'blob', bg: 'white', scale:'1'});
+        const image = this.cy.png({output: 'blob', bg: 'white', scale:'1.5'});
         const url = URL.createObjectURL(image);
         this.setState({downloadUrl: url},
             () => {

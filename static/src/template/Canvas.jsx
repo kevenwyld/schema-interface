@@ -3,7 +3,6 @@ import CytoscapeComponent from 'react-cytoscapejs';
 import cytoscape from 'cytoscape';
 import klay from 'cytoscape-klay';
 import contextMenus from 'cytoscape-context-menus'
-// want to use https://github.com/iVis-at-Bilkent/cytoscape.js-expand-collapse
 
 import axios from 'axios';
 import equal from 'fast-deep-equal';
@@ -16,6 +15,9 @@ import CyStyle from '../public/cy-style.json';
 import 'cytoscape-context-menus/cytoscape-context-menus.css';
 
 // TODO: add uncollapse / unselect without complete reload
+// want to use https://github.com/iVis-at-Bilkent/cytoscape.js-expand-collapse
+    // will help with the weird recentering problem with the animation
+    // looks like it will require changing edge types and classes
 cytoscape.use(klay);
 cytoscape.use(contextMenus);
 

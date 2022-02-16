@@ -122,11 +122,11 @@ def get_nodes_and_edges(schema):
             nodes[scheme_id] = extend_node(create_node(scheme_id, _label, 'root', 'diamond'), scheme)
 
         # TODO: imperfect solution; find root node by finding a node without a parent instead in later traversal
+        # not root node, change node type
         if '@type' in nodes[scheme_id]['data']:
-            # not root node, change node type
             nodes[scheme_id]['data']['_type'] = 'parent'
             nodes[scheme_id]['data']['_shape'] = 'diamond'
-        # not hierarchical node, change node shape
+        # not hierarchical node, change node to a leaf
         if 'children' not in scheme:
             nodes[scheme_id]['data']['_type'] = 'child'
             nodes[scheme_id]['data']['_shape'] = 'ellipse'
@@ -147,6 +147,8 @@ def get_nodes_and_edges(schema):
             gate = 'or'
             if nodes[scheme_id]['data']['children_gate'] == 'xor':
                 gate = 'xor'
+                xor_id = f'{scheme_id}xor'
+                nodes[xor_id] = create_node(xor_id, 'XOR', 'gate', 'rectangle')
             elif nodes[scheme_id]['data']['children_gate'] == 'and':
                 gate = 'and'
             for child in scheme['children']:
@@ -163,8 +165,6 @@ def get_nodes_and_edges(schema):
 
                 # handle xor gate... or just add edges
                 if gate == 'xor':
-                    xor_id = f'{scheme_id}xor'
-                    nodes[xor_id] = create_node(xor_id, 'XOR', 'gate', 'rectangle')
                     # xor gate -> children edges
                     edges.append(create_edge(xor_id, child_id, _edge_type='child_outlink'))
                     edges.append(create_edge(scheme_id, xor_id, _edge_type='step_child'))
@@ -179,55 +179,50 @@ def get_nodes_and_edges(schema):
                             nodes[outlink] = create_node(outlink, _label, 'child', 'ellipse')
                         edges.append(create_edge(child_id, outlink, _edge_type='child_outlink'))
 
-        # handle containers to remove
-        edges_to_remove = []
-        for container in containers_to_remove:
-            in_edges = []
-            out_edges = []
-            parent_edge = ['', '']
-            # find all edges connected to the container
-            for edge in edges:
-                if edge['data']['target'] == container:
-                    if edge['data']['_edge_type'] == 'step_child':
-                        parent_edge[0] = edge['data']['source']
-                    else:
-                        in_edges.append(edge['data']['source'])
-                    edges_to_remove.append(edge)
-                if edge['data']['source'] == container:
-                    if edge['data']['_edge_type'] == 'step_child':
-                        parent_edge[1] = edge['data']['target']
-                    out_edges.append(edge['data']['target'])
-                    edges_to_remove.append(edge)
-            # add hierarchical edge
-            if parent_edge[1]:
-                edges.append(create_edge(parent_edge[0], parent_edge[1], _edge_type='step_child'))
-            # move other edges
-            # 1-to-many
-            if len(in_edges) == 1:
-                for out in out_edges:
-                    edges.append(create_edge(in_edges[0], out, _edge_type='child_outlink'))
-            # many-to-1
-            else:
-                for edge in in_edges:
-                    edges.append(create_edge(edge, out_edges[0], _edge_type='child_outlink'))
-            
-        for index in edges_to_remove:
-            edges.remove(index)
+    # handle containers to remove
+    edges_to_remove = []
+    for container in containers_to_remove:
+        in_edges = []
+        out_edges = []
+        parent_edge = ['', '']
+        # find all edges connected to the container
+        for edge in edges:
+            if edge['data']['target'] == container:
+                if edge['data']['_edge_type'] == 'step_child':
+                    parent_edge[0] = edge['data']['source']
+                else:
+                    in_edges.append(edge['data']['source'])
+                edges_to_remove.append(edge)
+            if edge['data']['source'] == container:
+                if edge['data']['_edge_type'] == 'step_child':
+                    parent_edge[1] = edge['data']['target']
+                out_edges.append(edge['data']['target'])
+                edges_to_remove.append(edge)
+        # add hierarchical edge
+        if parent_edge[0] != '' and parent_edge[1] != '':
+            edges.append(create_edge(parent_edge[0], parent_edge[1], _edge_type='step_child'))
+        # move other edges
+        # 1-to-many
+        if len(in_edges) == 1:
+            for out in out_edges:
+                edges.append(create_edge(in_edges[0], out, _edge_type='child_outlink'))
+        # many-to-1
+        else:
+            for edge in in_edges:
+                edges.append(create_edge(edge, out_edges[0], _edge_type='child_outlink'))
 
-        # === are these two necessary? / what are these for ===
-        # TODO: entities
-        # TODO: relations
+    for index in edges_to_remove:
+        edges.remove(index)
 
-        # if 'entityRelations' in schema and isinstance(schema['entityRelations'], list):
-        #     for entityRelation in schema['entityRelations']:
-        #         subject = entityRelation['relationSubject']
-        #         for relation in entityRelation['relations']:
-        #             predicate = relation['relationPredicate'].split('/')[-1]
-        #             rel_object = relation['relationObject'] if isinstance(relation['relationObject'], list) else [relation['relationObject']]
-        #             for obj in rel_object:
-        #                 edges.append(create_edge(f"{subject}_{obj}", subject, obj, predicate, 'participant_participant'))
-        #                 if obj not in nodes:
-        #                     nodes[obj] = create_node(obj, obj, 'participant', 'round-pentagon')
+
+
+    # TODO: entities and relations
+        # Q: can we make it so that coreferent links are visualized in the current view?
+        # currently participant labels are the role names
+        # if we want to let them be coreferent with other events, the label must be the entity name
+        # how would we know what the role name is though? people would have to look at the json
+            # make the edge label the role name?
+        # relations between entities would be directed edge from subject to object, predicate is edge label
         
     return nodes, edges
 

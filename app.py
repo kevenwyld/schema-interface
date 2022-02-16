@@ -209,10 +209,9 @@ def get_nodes_and_edges(schema):
     parentless_edge = {}
     for edge in edges:
         # unseen nodes
-        if edge['data']['_edge_type'] == 'step_child':
-            if edge['data']['source'] not in parentless_edge:
-                parentless_edge[edge['data']['source']] = True
-            parentless_edge[edge['data']['target']] = False
+        if edge['data']['source'] not in parentless_edge:
+            parentless_edge[edge['data']['source']] = True
+        parentless_edge[edge['data']['target']] = False
     roots = [edge for edge in parentless_edge if parentless_edge[edge] == True]
     for root in roots:
         nodes[root]['data']['_type'] = 'root'

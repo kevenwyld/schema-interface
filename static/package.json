@@ -1,6 +1,6 @@
 {
   "name": "schema-interface",
-  "version": "0.5.1",
+  "version": "0.5.4",
   "description": "Schema Curation Interface",
   "private": true,
   "scripts": {

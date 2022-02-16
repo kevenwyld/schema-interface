@@ -74,7 +74,6 @@ class Canvas extends React.Component {
                 }
                 this.setState({hasSubtree: true});
                 this.cy.add(res.data);
-                this.cy.center(res.data);
                 this.runLayout();
             })
             .catch(err => {
@@ -88,11 +87,7 @@ class Canvas extends React.Component {
     }
 
     runLayout() {
-        let layout = this.cy.makeLayout(Object.assign({}, CyStyle.layout, {
-            ready: e => {
-                e.cy.center();
-            }
-        }));
+        let layout = this.cy.makeLayout(Object.assign({}, CyStyle.layout, {}));
         layout.run();
     }
 

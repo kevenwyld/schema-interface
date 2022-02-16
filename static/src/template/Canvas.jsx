@@ -58,10 +58,6 @@ class Canvas extends React.Component {
         this.props.sidebarCallback(data);
     }
 
-    showEditor(data) {
-        this.props.editorCallback(data);
-    }
-
     showSubTree(node) {
         axios.get('/node', {
             params: {

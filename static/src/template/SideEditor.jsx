@@ -35,7 +35,8 @@ function SideEditor (props) {
             key: e.target.name,
             value: e.target.value
         };
-        props.sideEditorCallback(node_data);
+        if(e.target.value !== data.propData[e.target.name])
+            props.sideEditorCallback(node_data);
     }
 
     let i = 0;

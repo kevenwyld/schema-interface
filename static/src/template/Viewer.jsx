@@ -62,6 +62,8 @@ class Viewer extends Component {
 
     jsonEditorCallback(json){
         /* Handles changes from the JSON editor */
+        if (JSON.stringify(json) === JSON.stringify(this.state.schemaJson))
+            return false;
         axios.post("/reload", json)
             .then(res => {
                 toast.success('Reload success')

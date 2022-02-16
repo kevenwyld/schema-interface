@@ -100,15 +100,13 @@ def get_nodes_and_edges(schema):
     
     for scheme in schema:
         # create event node
+        # if node already exists, add information
         _label = scheme['name'].split('/')[-1].replace('_', ' ').replace('-', ' ')
         scheme_id = scheme['@id']
-        # node already exists
         if scheme_id in nodes:
-            # add information
             nodes[scheme_id]['data']['_type'] = 'root'
             nodes[scheme_id]['data']['_label'] = _label
             nodes[scheme_id] = extend_node(nodes[scheme_id], scheme)
-            # change type back
             if 'children' not in scheme:
                 nodes[scheme_id]['data']['_type'] = 'child'
             elif 'outlinks' in nodes[scheme_id]['data']['name'].lower():
@@ -117,16 +115,11 @@ def get_nodes_and_edges(schema):
             else:
                 nodes[scheme_id]['data']['_type'] = 'parent'
                 nodes[scheme_id]['data']['_shape'] = 'diamond'
-        # new node
         else:
             nodes[scheme_id] = extend_node(create_node(scheme_id, _label, 'root', 'diamond'), scheme)
-
-        # TODO: imperfect solution; find root node by finding a node without a parent instead in later traversal
-        # not root node, change node type
-        if '@type' in nodes[scheme_id]['data']:
             nodes[scheme_id]['data']['_type'] = 'parent'
-            nodes[scheme_id]['data']['_shape'] = 'diamond'
-        # not hierarchical node, change node to a leaf
+
+        # not hierarchical node, change node type to a leaf
         if 'children' not in scheme:
             nodes[scheme_id]['data']['_type'] = 'child'
             nodes[scheme_id]['data']['_shape'] = 'ellipse'
@@ -151,27 +144,26 @@ def get_nodes_and_edges(schema):
                 nodes[xor_id] = create_node(xor_id, 'XOR', 'gate', 'rectangle')
             elif nodes[scheme_id]['data']['children_gate'] == 'and':
                 gate = 'and'
+            
             for child in scheme['children']:
+                # add child information or create new node
                 child_id = child['child']
-                # node already exists
                 if child_id in nodes:
                     prev_type = nodes[child_id]['data']['_type']
                     nodes[child_id]['data']['_type'] = 'child'
                     nodes[child_id] = extend_node(nodes[child_id], child)
                     nodes[child_id]['data']['_type'] = prev_type
-                # new node
                 else:                    
                     nodes[child_id] = extend_node(create_node(child_id, child['comment'], 'child', 'ellipse'), child)
 
-                # handle xor gate... or just add edges
+                # handle xor gate or just add edges
                 if gate == 'xor':
-                    # xor gate -> children edges
                     edges.append(create_edge(xor_id, child_id, _edge_type='child_outlink'))
                     edges.append(create_edge(scheme_id, xor_id, _edge_type='step_child'))
                 else:
                     edges.append(create_edge(scheme_id, child_id, _edge_type='child_outlink' if gate == 'and' else 'step_child'))
             
-                # check for outlinks
+                # add outlinks
                 if len(child['outlinks']):
                     for outlink in child['outlinks']:
                         if outlink not in nodes:
@@ -201,20 +193,29 @@ def get_nodes_and_edges(schema):
         # add hierarchical edge
         if parent_edge[0] != '' and parent_edge[1] != '':
             edges.append(create_edge(parent_edge[0], parent_edge[1], _edge_type='step_child'))
-        # move other edges
-        # 1-to-many
+        # attach other edges
         if len(in_edges) == 1:
             for out in out_edges:
                 edges.append(create_edge(in_edges[0], out, _edge_type='child_outlink'))
-        # many-to-1
         else:
             for edge in in_edges:
                 edges.append(create_edge(edge, out_edges[0], _edge_type='child_outlink'))
+        nodes.pop(container)
 
     for index in edges_to_remove:
         edges.remove(index)
 
-
+    # find root node(s)
+    parentless_edge = {}
+    for edge in edges:
+        # unseen nodes
+        if edge['data']['_edge_type'] == 'step_child':
+            if edge['data']['source'] not in parentless_edge:
+                parentless_edge[edge['data']['source']] = True
+            parentless_edge[edge['data']['target']] = False
+    roots = [edge for edge in parentless_edge if parentless_edge[edge] == True]
+    for root in roots:
+        nodes[root]['data']['_type'] = 'root'
 
     # TODO: entities and relations
         # Q: can we make it so that coreferent links are visualized in the current view?
@@ -319,9 +320,11 @@ def get_connected_nodes(selected_node):
     e = []
     id_set = set()
     
+    # TODO: how to visualize multiple root nodes?
+        # do we actually need this?
     if selected_node == 'root':
         for _, node in nodes.items():
-            if node['data']['_type'] == selected_node:
+            if node['data']['_type'] == 'root':
                 root_node = node
                 n.append(node)
                 id_set.add(node['data']['id'])

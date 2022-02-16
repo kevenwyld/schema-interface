@@ -397,8 +397,6 @@ def get_subtree_or_update_node():
         values = json.loads(request.data.decode("utf-8"))
         new_json = update_json(values)
         return json.dumps(new_json)
-        
-
 
 @app.route('/reload', methods=['POST'])
 def reload_schema():

@@ -1,9 +1,9 @@
 import React, { Component } from 'react';
 import isEmpty from 'lodash/isEmpty';
-import DownloadIcon from '@material-ui/icons/CloudDownload';
 import { ToastContainer, toast } from 'react-toastify';
 import 'react-toastify/dist/ReactToastify.css';
-
+import IconButton from '@mui/material/IconButton';
+import DownloadIcon from '@mui/icons-material/CloudDownload';
 
 import axios from 'axios';
 import UploadModal from './UploadModal';
@@ -149,7 +149,9 @@ class Viewer extends Component {
                 <div className='container'>
                     <ToastContainer theme="colored"/>
                     <UploadModal buttonLabel="Upload Schema" parentCallback={this.callbackFunction} />
-                    <DownloadIcon className="button" type="button" color={this.state.isUpload ? "action" : "disabled"} onClick={this.download}/>
+                    <IconButton aria-label="download" disabled={!this.state.isUpload} color="primary" onClick={this.download}>
+                        <DownloadIcon />
+                    </IconButton>
                     <a style={{display: "none"}}
                         download={this.state.fileName}
                         href={this.state.downloadUrl}

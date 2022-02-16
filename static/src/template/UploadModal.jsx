@@ -1,7 +1,10 @@
 import React, { Component } from 'react';
-import { Button, Modal, ModalHeader, ModalBody, ModalFooter, Input, Label, Form, FormGroup } from 'reactstrap';
+import { Modal, ModalHeader, ModalBody, ModalFooter, Input, Label, Form, FormGroup } from 'reactstrap';
 import { ToastContainer, toast } from 'react-toastify';
 import 'react-toastify/dist/ReactToastify.css';
+
+import Button from '@mui/material/Button';
+import UploadFileIcon from '@mui/icons-material/UploadFile';
 
 import axios from 'axios';
 
@@ -156,7 +159,7 @@ class UploadModal extends Component {
     return (
       <div>
         <div style={{'display': 'flex', 'justifyContent': 'center'}}>
-          <Button id="btn-modal" color="primary" onClick={openModal}>
+          <Button id="btn-modal" variant="contained" endIcon={<UploadFileIcon />} onClick={openModal}>
             {this.props.buttonLabel}
           </Button>
         </div>
@@ -174,10 +177,13 @@ class UploadModal extends Component {
           </ModalBody>
 
           <ModalFooter>
-            <Button disabled={!this.state.valid} color="primary" onClick={this.onClickHandler}>
+            <Button variant="contained" disabled={!this.state.valid} onClick={this.onClickHandler} endIcon={<UploadFileIcon />}>
               Upload
-            </Button>{' '}
-            <Button color="secondary" onClick={this.toggle}>Cancel</Button>
+            </Button>
+            {' '}
+            <Button variant="outlined" color="info" onClick={this.toggle}>
+              Cancel
+            </Button>
           </ModalFooter>
         </Modal>
       </div>

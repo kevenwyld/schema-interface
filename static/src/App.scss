@@ -4,9 +4,14 @@
     width: 100vw;
 }
 
+.Index{
+    font-family: Arial, Helvetica, sans-serif;
+    text-align: center;
+}
+
 .Header {
     display: inline-flex;
-    background-color: #000;
+    background-color: rgb(45, 46, 49);
     width: 100vw;
     height: 20vh;
     text-align: center;
@@ -30,7 +35,7 @@
     }
 
     a{
-        color: white;
+        color: #ddd;
     }
 }
 

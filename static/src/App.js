@@ -10,8 +10,8 @@ import {
 import Home from "./template/Home";
 import Viewer from "./template/Viewer";
 import logo from './public/logo.png'
-import GitHubIcon from '@material-ui/icons/GitHub';
-import HelpIcon from '@material-ui/icons/Help';
+import GitHubIcon from '@mui/icons-material/GitHub';
+import HelpIcon from '@mui/icons-material/Help';
 
 import './App.scss'
 
@@ -21,23 +21,29 @@ export default function App() {
       <div className="App">
         <Row className="Header">
           <Col md="2" id="logo">
-            <img src={'/static'+ logo} alt="Curate" />
+            <Link to="/">
+              <img src={'/static'+ logo} alt="Curate" />
+            </Link>
           </Col>
-          <Col md="4" id="title" className="align-self-center">
-            <div><h1>CURATE</h1></div>
-            <div><h4 >Schema Curation Interface</h4></div>
+          <Col md="1" />
+          <Col md="3" id="title" className="align-self-center">
+              <div><h1>CURATE</h1></div>
+              <div><h4 >Schema Curation Interface</h4></div>
           </Col>
-          <Col md="6" className="align-self-center">
+          <Col md="5" className="align-self-center">
             <Row>
-              <Col md="3" className="nav-items">
-                <Link to="/">Home</Link>
-              </Col>
+              <Col md="1" />
               <Col md="3" className="nav-items">
                 <Link to="/viewer">Viewer</Link>
               </Col>
-              <Col md="3" className="nav-items">
+              <Col md="1" className="nav-items">
                 <a target="_blank" href="https://github.com/cu-clear/schema-interface">
-                  <img src={GitHubIcon} alt="GitHub" />
+                  <GitHubIcon />
+                </a>
+              </Col>
+              <Col md="1" className="nav-items">
+                <a target="_blank" href="https://chrysographes.notion.site/Schema-Curation-Manual-c17f79c7450246d3ad7796e43bebea1b">
+                  <HelpIcon />
                 </a>
               </Col>
             </Row>

@@ -71,6 +71,10 @@ class Viewer extends Component {
                 let error = err.response.data;
                 let error_title = error.slice(error.indexOf("<title>")+7, error.lastIndexOf("</title>"));
                 let error_notif = error_title.slice(0, error_title.indexOf("//"));
+                if (error_notif.includes('root_node'))
+                    error_notif = "UnboundLocalError: Root node not found.\nPlease make sure you have a root node that has an 'or' children_gate for hierarchy visualization.";
+                if (error_notif.includes("KeyError: 'children_gate'"))
+                    error_notif = "KeyError: no children_gate in an event with children.";
                 toast.error(error_notif);
                 return false;
             });

@@ -9,6 +9,10 @@ import isEmpty from 'lodash/isEmpty';
 
 import Editable from './Editable';
 
+// TODO: give q-node label an external URL to wikidata
+// TODO: is it possible to order sidebar info in a specific way?
+// BUG changing child doesn't seem to actually change @id
+// BUG sidebar no longer updates D:
 function SideEditor (props) {
     /*
     Handles sidebar that shows general information about a node

@@ -308,6 +308,7 @@ def update_json(values):
 
     # TODO: change how participants are changed
     # TODO: add entities and relations
+    # BUG: changing @id or child does not change outlinks
 
     # what key is it?
     # special cases

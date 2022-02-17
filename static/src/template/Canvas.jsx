@@ -15,6 +15,7 @@ import CyStyle from '../public/cy-style.json';
 import 'cytoscape-context-menus/cytoscape-context-menus.css';
 
 // TODO: add uncollapse / unselect without complete reload
+// will fix the temp solution of freezing the topmost tree
 // want to use https://github.com/iVis-at-Bilkent/cytoscape.js-expand-collapse
     // will help with the weird recentering problem with the animation
     // looks like it will require changing edge types and classes

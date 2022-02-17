@@ -69,6 +69,8 @@ def extend_node(node, obj):
     node (dict): node to extend
     obj (dict): schema with data on the node
     
+    Returns:
+    node (dict): extended node
     """
 
     for key in obj.keys():
@@ -83,6 +85,53 @@ def extend_node(node, obj):
                 node['data'][key] = obj['privateData'][key]
     return node
 
+def handle_containers(nodes, edges, containers):
+    """Connects incoming and outgoing edges and removes all unvisualized nodes and edges.
+    
+    Parameters:
+    nodes (dict): nodes in the schema
+    edges (list): edges in the schema
+    containers (list): list of containers to be processed and removed
+
+    Returns:
+    nodes (dict): nodes in the schema
+    edges (list): edges in the schema
+    """
+    edges_to_remove = []
+    for container in containers:
+        in_edges = []
+        out_edges = []
+        parent_edge = ['', '']
+        # find all edges connected to the container
+        for edge in edges:
+            if edge['data']['target'] == container:
+                if edge['data']['_edge_type'] == 'step_child':
+                    parent_edge[0] = edge['data']['source']
+                else:
+                    in_edges.append(edge['data']['source'])
+                edges_to_remove.append(edge)
+            if edge['data']['source'] == container:
+                if edge['data']['_edge_type'] == 'step_child':
+                    parent_edge[1] = edge['data']['target']
+                out_edges.append(edge['data']['target'])
+                edges_to_remove.append(edge)
+        # add hierarchical edge
+        if parent_edge[0] != '' and parent_edge[1] != '':
+            edges.append(create_edge(parent_edge[0], parent_edge[1], _edge_type='step_child'))
+        # attach other edges
+        if len(in_edges) == 1:
+            for out in out_edges:
+                edges.append(create_edge(in_edges[0], out, _edge_type='child_outlink'))
+        else:
+            for edge in in_edges:
+                edges.append(create_edge(edge, out_edges[0], _edge_type='child_outlink'))
+        nodes.pop(container)
+
+    for index in edges_to_remove:
+        edges.remove(index)
+    
+    return nodes, edges
+
 def get_nodes_and_edges(schema):
     """Creates lists of nodes and edges, through references and relations.
 
@@ -90,9 +139,8 @@ def get_nodes_and_edges(schema):
     schema (dict): contains information on all nodes and edges in a schema.
 
     Returns:
-    nodes (dict): dictionary of nodes
-    edges (list): list of edges 
-
+    nodes (dict): nodes in the schema
+    edges (list): edges in the schema
     """
     nodes = {}
     edges = []
@@ -171,44 +219,11 @@ def get_nodes_and_edges(schema):
                             nodes[outlink] = create_node(outlink, _label, 'child', 'ellipse')
                         edges.append(create_edge(child_id, outlink, _edge_type='child_outlink'))
 
-    # handle containers to remove
-    edges_to_remove = []
-    for container in containers_to_remove:
-        in_edges = []
-        out_edges = []
-        parent_edge = ['', '']
-        # find all edges connected to the container
-        for edge in edges:
-            if edge['data']['target'] == container:
-                if edge['data']['_edge_type'] == 'step_child':
-                    parent_edge[0] = edge['data']['source']
-                else:
-                    in_edges.append(edge['data']['source'])
-                edges_to_remove.append(edge)
-            if edge['data']['source'] == container:
-                if edge['data']['_edge_type'] == 'step_child':
-                    parent_edge[1] = edge['data']['target']
-                out_edges.append(edge['data']['target'])
-                edges_to_remove.append(edge)
-        # add hierarchical edge
-        if parent_edge[0] != '' and parent_edge[1] != '':
-            edges.append(create_edge(parent_edge[0], parent_edge[1], _edge_type='step_child'))
-        # attach other edges
-        if len(in_edges) == 1:
-            for out in out_edges:
-                edges.append(create_edge(in_edges[0], out, _edge_type='child_outlink'))
-        else:
-            for edge in in_edges:
-                edges.append(create_edge(edge, out_edges[0], _edge_type='child_outlink'))
-        nodes.pop(container)
-
-    for index in edges_to_remove:
-        edges.remove(index)
+    nodes, edges = handle_containers(nodes, edges, containers_to_remove)
 
     # find root node(s)
     parentless_edge = {}
     for edge in edges:
-        # unseen nodes
         if edge['data']['source'] not in parentless_edge:
             parentless_edge[edge['data']['source']] = True
         parentless_edge[edge['data']['target']] = False
@@ -223,6 +238,9 @@ def get_nodes_and_edges(schema):
         # how would we know what the role name is though? people would have to look at the json
             # make the edge label the role name?
         # relations between entities would be directed edge from subject to object, predicate is edge label
+        # ----
+        # Zoey wants an entity-first view, so all entities are shown, with groups of events around them in clusters
+            # Q: are we able to make a tab on the viewer itself to switch between views?
         
     return nodes, edges
 
@@ -312,7 +330,8 @@ def get_connected_nodes(selected_node):
     selected_node (str): name of node that serves as the topmost node.
 
     Returns:
-    dict:list of nodes and list of edges
+    str: name of root node
+    dict: list of nodes and list of edges
     
     """
     n = []
@@ -351,10 +370,7 @@ def get_connected_nodes(selected_node):
                     n.append(nodes[edge['data']['target']])
                 e.append(edge)
 
-    return {
-        'nodes': n,
-        'edges': e
-    }
+    return root_node['data']['name'], {'nodes': n, 'edges': e}
 
 @app.route('/')
 def homepage():
@@ -371,8 +387,7 @@ def upload():
     schemaJson = json.loads(schema_string)
     schema = schemaJson['events']
     nodes, edges = get_nodes_and_edges(schema)
-    schema_name = schema[0]['name']
-    parsed_schema = get_connected_nodes('root')
+    schema_name, parsed_schema = get_connected_nodes('root')
     return json.dumps({
         'parsedSchema': parsed_schema,
         'name': schema_name,
@@ -387,7 +402,7 @@ def get_subtree_or_update_node():
     if request.method == 'GET':        
         """Gets subtree of the selected node."""
         node_id = request.args.get('ID')
-        subtree = get_connected_nodes(node_id)
+        _, subtree = get_connected_nodes(node_id)
         return json.dumps(subtree)
     else:
         """Posts updates to selected node and reloads schema."""
@@ -405,8 +420,7 @@ def reload_schema():
     schemaJson = json.loads(schema_string)
     schema = schemaJson['events']
     nodes, edges = get_nodes_and_edges(schema)
-    schema_name = schema[0]['name']
-    parsed_schema = get_connected_nodes('root')
+    schema_name, parsed_schema = get_connected_nodes('root')
     return json.dumps({
         'parsedSchema': parsed_schema,
         'name': schema_name,

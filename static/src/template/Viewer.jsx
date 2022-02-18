@@ -116,16 +116,11 @@ class Viewer extends Component {
         let canvas = "";
         let schemaHeading = "";
         let jsonEdit = "";
-        let navEle = "";
         let sidebarClassName = this.state.isOpen ? "sidebar-open" : "sidebar-closed";
         let canvasClassName = this.state.isOpen ? "canvas-shrunk": "canvas-wide";
 
         // a schema exists
         if (this.state.schemaResponse !== '') {
-            // shrink the header to make space for the schema
-            navEle = document.getElementsByClassName('Header')[0];
-            navEle.classList.add("shrink");
-            
             // title of schema
             schemaHeading = <h3 className="schema-name col-md-8" style={{textAlign: 'center'}}>
                                 {this.state.schemaName}
@@ -144,10 +139,6 @@ class Viewer extends Component {
                 parentCallback={this.jsonEditorCallback}
             />
         
-        } else {
-            if (navEle) {
-                navEle.classList.remove("shrink");
-            }
         }
 
         return (

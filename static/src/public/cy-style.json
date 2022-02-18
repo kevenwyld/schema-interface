@@ -36,9 +36,10 @@
             }
         },
         {
-            "selector": "node[_type = 'participant']",
+            "selector": "node[_type = 'entity']",
             "style": {
-                "background-color": "#bcbcbc"
+                "background-color": "#bcbcbc",
+                "shape": "rectangle"
             }
         },
         {
@@ -101,6 +102,14 @@
             }
         },
         {
+            "selector": "edge[_edge_type = 'relation']",
+            "style": {
+                "target-arrow-color": "#777",
+                "line-color": "#777",
+                "width": "2vw"
+            }
+        },
+        {
             "selector": "edge[_edge_type = 'child_outlink']",
             "style": {
                 "line-color": "#000000",
@@ -112,12 +121,6 @@
             "style": {
                 "line-color": "#91a59f",
                 "target-arrow-color": "#91a59f"
-            }
-        },
-        {
-            "selector": ".optional-before",
-            "style": {
-                "line-style": "dashed"
             }
         }
     ],

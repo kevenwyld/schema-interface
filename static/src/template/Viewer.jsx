@@ -62,6 +62,8 @@ class Viewer extends Component {
 
     jsonEditorCallback(json){
         /* Handles changes from the JSON editor */
+        if (JSON.stringify(json) === JSON.stringify(this.state.schemaJson))
+            return false;
         axios.post("/reload", json)
             .then(res => {
                 toast.success('Reload success')
@@ -71,6 +73,10 @@ class Viewer extends Component {
                 let error = err.response.data;
                 let error_title = error.slice(error.indexOf("<title>")+7, error.lastIndexOf("</title>"));
                 let error_notif = error_title.slice(0, error_title.indexOf("//"));
+                if (error_notif.includes('root_node'))
+                    error_notif = "UnboundLocalError: Root node not found.\nPlease make sure you have a root node that has an 'or' children_gate for hierarchy visualization.";
+                if (error_notif.includes("KeyError: 'children_gate'"))
+                    error_notif = "KeyError: no children_gate in an event with children.";
                 toast.error(error_notif);
                 return false;
             });
@@ -110,16 +116,11 @@ class Viewer extends Component {
         let canvas = "";
         let schemaHeading = "";
         let jsonEdit = "";
-        let navEle = "";
         let sidebarClassName = this.state.isOpen ? "sidebar-open" : "sidebar-closed";
         let canvasClassName = this.state.isOpen ? "canvas-shrunk": "canvas-wide";
 
         // a schema exists
         if (this.state.schemaResponse !== '') {
-            // shrink the header to make space for the schema
-            navEle = document.getElementsByClassName('Header')[0];
-            navEle.classList.add("shrink");
-            
             // title of schema
             schemaHeading = <h3 className="schema-name col-md-8" style={{textAlign: 'center'}}>
                                 {this.state.schemaName}
@@ -138,10 +139,6 @@ class Viewer extends Component {
                 parentCallback={this.jsonEditorCallback}
             />
         
-        } else {
-            if (navEle) {
-                navEle.classList.remove("shrink");
-            }
         }
 
         return (

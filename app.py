@@ -1,3 +1,4 @@
+from tkinter import E
 from flask import Flask, render_template, request
 import json
 
@@ -15,10 +16,10 @@ schemaJson = {}
 
 # SDF version 1.4
 schema_key_dict = {
-    'root': ['@id', 'name', 'comment', 'description', 'aka', 'qnode', 'qlabel', 'minDuration', 'maxDuration', 'goal', 'ta1explanation', 'importance', 'children_gate'],
-    'participant': ['@id', 'roleName', 'entity'],
+    'event': ['@id', 'name', 'comment', 'description', 'aka', 'qnode', 'qlabel', 'minDuration', 'maxDuration', 'goal', 'ta1explanation', 'importance', 'children_gate'],
     'child': ['child', 'comment', 'optional', 'importance', 'outlinks', 'outlink_gate'],
-    'privateData': ['@type', 'template', 'repeatable', 'importance']
+    'privateData': ['@type', 'template', 'repeatable', 'importance'],
+    'entity': ['name', '@id', 'qnode', 'qlabel', 'centrality']
 }
 
 def create_node(_id, _label, _type, _shape=''):
@@ -54,7 +55,7 @@ def create_edge(_source, _target, _label='', _edge_type=''):
     return {
         'data': {
             'id': f"{_source}_{_target}",
-            '_label': _label,
+            '_label': f"\n\u2060{_label}\n\u2060",
             'source': _source,
             'target': _target,
             '_edge_type': _edge_type
@@ -69,6 +70,8 @@ def extend_node(node, obj):
     node (dict): node to extend
     obj (dict): schema with data on the node
     
+    Returns:
+    node (dict): extended node
     """
 
     for key in obj.keys():
@@ -83,95 +86,179 @@ def extend_node(node, obj):
                 node['data'][key] = obj['privateData'][key]
     return node
 
-def get_nodes_and_edges(schema):
-    """Creates lists of nodes and edges, through references and relations.
-
+def get_entities(entities):
+    """Creates lists of entity nodes through the schema entity ontology.
+    
     Parameters:
-    schema (dict): contains information on all nodes and edges in a schema.
+    entities (dict): information on all entities in a schema
 
     Returns:
-    nodes (dict): dictionary of nodes
-    edges (list): list of edges 
-
+    nodes (dict): entity nodes in the schema
     """
     nodes = {}
+    for entity in entities:
+        _label = entity['name']
+        entity_id = entity['@id']
+        nodes[entity_id] = extend_node(create_node(entity_id, _label, 'entity'), entity)
+
+    return nodes
+
+def get_relations(relations):
+    """Creates edges between entities through the schema relation ontology.
+
+    Parameters:
+    nodes (dict): nodes in the schema
+    relations (dict): information on all relations in a schema
+
+    Returns:
+    nodes (dict): nodes in the schema
+    edges (list): edges in the schema
+    """
     edges = []
-    containers_to_remove = []
+    # 'relation': ['name', 'relationSubject', 'relationPredicate', 'relationObject', '@id']
+    for relation in relations:
+        edge = create_edge(_source = relation['relationSubject'],
+                           _target = relation['relationObject'],
+                           _label = relation['name'],
+                           _edge_type = 'relation')
+        edge['data']['@id'] = relation['@id']
+        edge['data']['predicate'] = relation['relationPredicate']
+        edges.append(edge)
+
+    return edges
+
+def handle_containers(nodes, edges, containers):
+    """Connects incoming and outgoing edges and removes all unvisualized nodes and edges.
     
-    for scheme in schema:
-        # create event node
-        _label = scheme['name'].split('/')[-1].replace('_', ' ').replace('-', ' ')
-        scheme_id = scheme['@id']
-        # node already exists
-        if scheme_id in nodes:
-            # add information
-            nodes[scheme_id]['data']['_type'] = 'root'
-            nodes[scheme_id]['data']['_label'] = _label
-            nodes[scheme_id] = extend_node(nodes[scheme_id], scheme)
-            # change type back
-            if 'children' not in scheme:
-                nodes[scheme_id]['data']['_type'] = 'child'
-            elif 'outlinks' in nodes[scheme_id]['data']['name'].lower():
-                nodes[scheme_id]['data']['_type'] = 'container'
-                containers_to_remove.append(scheme_id)
-            else:
-                nodes[scheme_id]['data']['_type'] = 'parent'
-                nodes[scheme_id]['data']['_shape'] = 'diamond'
-        # new node
+    Parameters:
+    nodes (dict): nodes in the schema
+    edges (list): edges in the schema
+    containers (list): list of containers to be processed and removed
+
+    Returns:
+    nodes (dict): nodes in the schema
+    edges (list): edges in the schema
+    """
+    edges_to_remove = []
+    for container in containers:
+        in_edges = []
+        out_edges = []
+        parent_edge = ['', '']
+        # find all edges connected to the container
+        for edge in edges:
+            if edge['data']['target'] == container:
+                if edge['data']['_edge_type'] == 'step_child':
+                    parent_edge[0] = edge['data']['source']
+                else:
+                    in_edges.append(edge['data']['source'])
+                edges_to_remove.append(edge)
+            if edge['data']['source'] == container:
+                if edge['data']['_edge_type'] == 'step_child':
+                    parent_edge[1] = edge['data']['target']
+                out_edges.append(edge['data']['target'])
+                edges_to_remove.append(edge)
+        # add hierarchical edge
+        if parent_edge[0] != '' and parent_edge[1] != '':
+            edges.append(create_edge(parent_edge[0], parent_edge[1], _edge_type='step_child'))
+        # attach other edges
+        if len(in_edges) == 1:
+            for out in out_edges:
+                edges.append(create_edge(in_edges[0], out, _edge_type='child_outlink'))
         else:
-            nodes[scheme_id] = extend_node(create_node(scheme_id, _label, 'root', 'diamond'), scheme)
+            for edge in in_edges:
+                edges.append(create_edge(edge, out_edges[0], _edge_type='child_outlink'))
+        nodes.pop(container)
 
-        # TODO: imperfect solution; find root node by finding a node without a parent instead in later traversal
-        if '@type' in nodes[scheme_id]['data']:
-            # not root node, change node type
-            nodes[scheme_id]['data']['_type'] = 'parent'
-            nodes[scheme_id]['data']['_shape'] = 'diamond'
-        # not hierarchical node, change node shape
-        if 'children' not in scheme:
-            nodes[scheme_id]['data']['_type'] = 'child'
-            nodes[scheme_id]['data']['_shape'] = 'ellipse'
+    for index in edges_to_remove:
+        edges.remove(index)
+    
+    return nodes, edges
+
+def get_nodes_and_edges(schemaJson):
+    """Creates lists of nodes and edges through the schema event ontology.
+
+    Parameters:
+    schemaJson (dict): entire schema in json form
+
+    Returns:
+    nodes (dict): nodes in the schema
+    edges (list): edges in the schema
+    """
+    
+    # get entities and relations
+    nodes = get_entities(schemaJson['entities'])
+    edges = get_relations(schemaJson['relations'])
+
+    # get events and attach entities to them
+    containers_to_remove = []
+    events = schemaJson['events']
+    for event in events:
+        # create event node
+        # if node already exists, add information
+        _label = event['name'].split('/')[-1].replace('_', ' ').replace('-', ' ')
+        event_id = event['@id']
+        if event_id in nodes:
+            nodes[event_id]['data']['_type'] = 'event'
+            nodes[event_id]['data']['_label'] = _label
+            nodes[event_id] = extend_node(nodes[event_id], event)
+            if 'children' not in event:
+                nodes[event_id]['data']['_type'] = 'child'
+            elif 'outlinks' in nodes[event_id]['data']['name'].lower():
+                nodes[event_id]['data']['_type'] = 'container'
+                containers_to_remove.append(event_id)
+            else:
+                nodes[event_id]['data']['_type'] = 'parent'
+                nodes[event_id]['data']['_shape'] = 'diamond'
+        else:
+            nodes[event_id] = extend_node(create_node(event_id, _label, 'event', 'diamond'), event)
+            nodes[event_id]['data']['_type'] = 'parent'
+
+        # not hierarchical node, change node type to a leaf
+        if 'children' not in event:
+            nodes[event_id]['data']['_type'] = 'child'
+            nodes[event_id]['data']['_shape'] = 'ellipse'
         # handle repeatable
-        if 'repeatable' in nodes[scheme_id]['data'] and nodes[scheme_id]['data']['repeatable']:
-            edges.append(create_edge(scheme_id, scheme_id, _edge_type='child_outlink'))
+        if 'repeatable' in nodes[event_id]['data'] and nodes[event_id]['data']['repeatable']:
+            edges.append(create_edge(event_id, event_id, _edge_type='child_outlink'))
 
-        # participants
-        if 'participants' in scheme:
-            for participant in scheme['participants']:
-                _label = participant['roleName'].split('/')[-1]
-                nodes[participant['@id']] = extend_node(create_node(participant['@id'], _label, 'participant', 'square'), participant)
-                
-                edges.append(create_edge(scheme_id, participant['@id'], _edge_type='step_participant'))
+        # link participants to entities
+        if 'participants' in event:
+            for participant in event['participants']:
+                _label = participant['roleName']
+                entity_id = participant['entity']
+                edge = create_edge(event_id, entity_id, _label, _edge_type='step_participant')
+                edge['data']['@id'] = participant['@id']
+                edges.append(edge)
 
         # children
-        if 'children' in scheme:
+        if 'children' in event:
             gate = 'or'
-            if nodes[scheme_id]['data']['children_gate'] == 'xor':
+            if nodes[event_id]['data']['children_gate'] == 'xor':
                 gate = 'xor'
-            elif nodes[scheme_id]['data']['children_gate'] == 'and':
+                xor_id = f'{event_id}xor'
+                nodes[xor_id] = create_node(xor_id, 'XOR', 'gate', 'rectangle')
+            elif nodes[event_id]['data']['children_gate'] == 'and':
                 gate = 'and'
-            for child in scheme['children']:
+            
+            for child in event['children']:
+                # add child information or create new node
                 child_id = child['child']
-                # node already exists
                 if child_id in nodes:
                     prev_type = nodes[child_id]['data']['_type']
                     nodes[child_id]['data']['_type'] = 'child'
                     nodes[child_id] = extend_node(nodes[child_id], child)
                     nodes[child_id]['data']['_type'] = prev_type
-                # new node
                 else:                    
                     nodes[child_id] = extend_node(create_node(child_id, child['comment'], 'child', 'ellipse'), child)
 
-                # handle xor gate... or just add edges
+                # handle xor gate or just add edges
                 if gate == 'xor':
-                    xor_id = f'{scheme_id}xor'
-                    nodes[xor_id] = create_node(xor_id, 'XOR', 'gate', 'rectangle')
-                    # xor gate -> children edges
                     edges.append(create_edge(xor_id, child_id, _edge_type='child_outlink'))
-                    edges.append(create_edge(scheme_id, xor_id, _edge_type='step_child'))
+                    edges.append(create_edge(event_id, xor_id, _edge_type='step_child'))
                 else:
-                    edges.append(create_edge(scheme_id, child_id, _edge_type='child_outlink' if gate == 'and' else 'step_child'))
+                    edges.append(create_edge(event_id, child_id, _edge_type='child_outlink' if gate == 'and' else 'step_child'))
             
-                # check for outlinks
+                # add outlinks
                 if len(child['outlinks']):
                     for outlink in child['outlinks']:
                         if outlink not in nodes:
@@ -179,55 +266,24 @@ def get_nodes_and_edges(schema):
                             nodes[outlink] = create_node(outlink, _label, 'child', 'ellipse')
                         edges.append(create_edge(child_id, outlink, _edge_type='child_outlink'))
 
-        # handle containers to remove
-        edges_to_remove = []
-        for container in containers_to_remove:
-            in_edges = []
-            out_edges = []
-            parent_edge = ['', '']
-            # find all edges connected to the container
-            for edge in edges:
-                if edge['data']['target'] == container:
-                    if edge['data']['_edge_type'] == 'step_child':
-                        parent_edge[0] = edge['data']['source']
-                    else:
-                        in_edges.append(edge['data']['source'])
-                    edges_to_remove.append(edge)
-                if edge['data']['source'] == container:
-                    if edge['data']['_edge_type'] == 'step_child':
-                        parent_edge[1] = edge['data']['target']
-                    out_edges.append(edge['data']['target'])
-                    edges_to_remove.append(edge)
-            # add hierarchical edge
-            if parent_edge[1]:
-                edges.append(create_edge(parent_edge[0], parent_edge[1], _edge_type='step_child'))
-            # move other edges
-            # 1-to-many
-            if len(in_edges) == 1:
-                for out in out_edges:
-                    edges.append(create_edge(in_edges[0], out, _edge_type='child_outlink'))
-            # many-to-1
+    nodes, edges = handle_containers(nodes, edges, containers_to_remove)
+
+    # find root node(s)
+    parentless_edge = {}
+    for edge in edges:
+        if edge['data']['source'] not in parentless_edge:
+            if nodes[edge['data']['source']]['data']['_type'] == 'entity':
+                parentless_edge[edge['data']['source']] = False
             else:
-                for edge in in_edges:
-                    edges.append(create_edge(edge, out_edges[0], _edge_type='child_outlink'))
-            
-        for index in edges_to_remove:
-            edges.remove(index)
+                parentless_edge[edge['data']['source']] = True
+        parentless_edge[edge['data']['target']] = False
+    roots = [edge for edge in parentless_edge if parentless_edge[edge] == True]
+    for root in roots:
+        nodes[root]['data']['_type'] = 'root'
 
-        # === are these two necessary? / what are these for ===
-        # TODO: entities
-        # TODO: relations
-
-        # if 'entityRelations' in schema and isinstance(schema['entityRelations'], list):
-        #     for entityRelation in schema['entityRelations']:
-        #         subject = entityRelation['relationSubject']
-        #         for relation in entityRelation['relations']:
-        #             predicate = relation['relationPredicate'].split('/')[-1]
-        #             rel_object = relation['relationObject'] if isinstance(relation['relationObject'], list) else [relation['relationObject']]
-        #             for obj in rel_object:
-        #                 edges.append(create_edge(f"{subject}_{obj}", subject, obj, predicate, 'participant_participant'))
-        #                 if obj not in nodes:
-        #                     nodes[obj] = create_node(obj, obj, 'participant', 'round-pentagon')
+    # TODO: entities and relations
+    # Zoey wants an entity-first view, so all entities are shown, with groups of events around them in clusters
+        # Q: are we able to make a tab on the viewer itself to switch between views?
         
     return nodes, edges
 
@@ -248,7 +304,11 @@ def update_json(values):
     new_value = values['value']
     node_type = node_id.split('/')[0].split(':')[-1]
     array_to_modify = False
-    isRoot = new_json['events'][0]['@id'] == node_id
+    isRoot = node_id == schema_name
+
+    # TODO: change how participants are changed
+    # TODO: add entities and relations
+    # BUG: changing @id or child does not change outlinks
 
     # what key is it?
     # special cases
@@ -317,7 +377,8 @@ def get_connected_nodes(selected_node):
     selected_node (str): name of node that serves as the topmost node.
 
     Returns:
-    dict:list of nodes and list of edges
+    str: name of root node
+    dict: list of nodes and list of edges
     
     """
     n = []
@@ -326,7 +387,7 @@ def get_connected_nodes(selected_node):
     
     if selected_node == 'root':
         for _, node in nodes.items():
-            if node['data']['_type'] == selected_node:
+            if node['data']['_type'] == 'root':
                 root_node = node
                 n.append(node)
                 id_set.add(node['data']['id'])
@@ -338,8 +399,8 @@ def get_connected_nodes(selected_node):
     for edge in edges:
         if edge['data']['source'] == root_node['data']['id']:
             node = nodes[edge['data']['target']]
-            # skip participant edges
-            if selected_node == 'root' and node['data']['_type'] == 'participant':
+            # skip entities
+            if selected_node == 'root' and node['data']['_type'] == 'entity':
                 continue
             e.append(edge)
             n.append(nodes[edge['data']['target']])
@@ -348,16 +409,16 @@ def get_connected_nodes(selected_node):
     # causal edges between children
     for id in id_set:
         for edge in edges:
-            if edge['data']['source'] == id and edge['data']['_edge_type'] == 'child_outlink':
-                # check if node was created previously
-                if edge['data']['target'] not in id_set:
-                    n.append(nodes[edge['data']['target']])
-                e.append(edge)
+            if edge['data']['source'] == id:
+                if edge['data']['_edge_type'] == 'child_outlink':
+                    # check if node was created previously
+                    if edge['data']['target'] not in id_set:
+                        n.append(nodes[edge['data']['target']])
+                    e.append(edge)
+                if edge['data']['target'] in id_set and edge['data']['_edge_type'] == 'relation':
+                    e.append(edge)
 
-    return {
-        'nodes': n,
-        'edges': e
-    }
+    return root_node['data']['name'], {'nodes': n, 'edges': e}
 
 @app.route('/')
 def homepage():
@@ -371,11 +432,10 @@ def upload():
     global schemaJson
     global nodes
     global edges
+    global schema_name
     schemaJson = json.loads(schema_string)
-    schema = schemaJson['events']
-    nodes, edges = get_nodes_and_edges(schema)
-    schema_name = schema[0]['name']
-    parsed_schema = get_connected_nodes('root')
+    nodes, edges = get_nodes_and_edges(schemaJson)
+    schema_name, parsed_schema = get_connected_nodes('root')
     return json.dumps({
         'parsedSchema': parsed_schema,
         'name': schema_name,
@@ -390,7 +450,7 @@ def get_subtree_or_update_node():
     if request.method == 'GET':        
         """Gets subtree of the selected node."""
         node_id = request.args.get('ID')
-        subtree = get_connected_nodes(node_id)
+        _, subtree = get_connected_nodes(node_id)
         return json.dumps(subtree)
     else:
         """Posts updates to selected node and reloads schema."""
@@ -405,11 +465,10 @@ def reload_schema():
     global schemaJson
     global nodes
     global edges
+    global schema_name
     schemaJson = json.loads(schema_string)
-    schema = schemaJson['events']
-    nodes, edges = get_nodes_and_edges(schema)
-    schema_name = schema[0]['name']
-    parsed_schema = get_connected_nodes('root')
+    nodes, edges = get_nodes_and_edges(schemaJson)
+    schema_name, parsed_schema = get_connected_nodes('root')
     return json.dumps({
         'parsedSchema': parsed_schema,
         'name': schema_name,

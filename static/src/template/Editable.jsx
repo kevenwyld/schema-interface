@@ -1,5 +1,6 @@
 import React, { useState } from "react";
 
+// BUG editing bar is not wrapped to the sidebar
 // From https://github.com/learnwithparam/logrocket-inline-edit-ui//
 // https://blog.logrocket.com/building-inline-editable-ui-in-react/
 const Editable = ({

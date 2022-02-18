@@ -3,7 +3,6 @@ import CytoscapeComponent from 'react-cytoscapejs';
 import cytoscape from 'cytoscape';
 import klay from 'cytoscape-klay';
 import contextMenus from 'cytoscape-context-menus'
-// want to use https://github.com/iVis-at-Bilkent/cytoscape.js-expand-collapse
 
 import axios from 'axios';
 import equal from 'fast-deep-equal';
@@ -11,16 +10,21 @@ import RefreshIcon from '@mui/icons-material/Refresh';
 import AspectRatioIcon from '@mui/icons-material/AspectRatio';
 import SaveIcon from '@mui/icons-material/Save';
 
-import Background from '../public/canvas_bg.png';
 import CyStyle from '../public/cy-style.json';
 import 'cytoscape-context-menus/cytoscape-context-menus.css';
 
 // TODO: add uncollapse / unselect without complete reload
+// will fix the temp solution of freezing the topmost tree
+// want to use https://github.com/iVis-at-Bilkent/cytoscape.js-expand-collapse
+    // will help with the weird recentering problem with the animation
+    // looks like it will require changing edge types and classes
 cytoscape.use(klay);
 cytoscape.use(contextMenus);
 
 /* Graph view of the data.
-   Includes reload button. */
+   Includes reload, fit to graph, and save current view button.
+   Left click to expand node, right click to expand / collapse sidebar of information.
+   Right click also gives a context menu to remove elements for visualization purposes. */
 class Canvas extends React.Component {
     constructor(props) {
         super(props);
@@ -56,10 +60,6 @@ class Canvas extends React.Component {
         this.props.sidebarCallback(data);
     }
 
-    showEditor(data) {
-        this.props.editorCallback(data);
-    }
-
     showSubTree(node) {
         axios.get('/node', {
             params: {
@@ -72,7 +72,6 @@ class Canvas extends React.Component {
                 }
                 this.setState({hasSubtree: true});
                 this.cy.add(res.data);
-                this.cy.center(res.data);
                 this.runLayout();
             })
             .catch(err => {
@@ -86,11 +85,7 @@ class Canvas extends React.Component {
     }
 
     runLayout() {
-        let layout = this.cy.makeLayout(Object.assign({}, CyStyle.layout, {
-            ready: e => {
-                e.cy.center();
-            }
-        }));
+        let layout = this.cy.makeLayout(Object.assign({}, CyStyle.layout, {}));
         layout.run();
     }
 
@@ -197,8 +192,7 @@ class Canvas extends React.Component {
         const style = {
             width: 'inherit', 
             height: '75vh',
-            borderStyle: 'solid',
-            backgroundImage: `url(${"/static" + Background})`
+            borderStyle: 'solid'
         };
 
         return (
@@ -219,7 +213,7 @@ class Canvas extends React.Component {
                         download={this.state.fileName}
                         href={this.state.downloadUrl}
                         ref={e=>this.dofileDownload = e}
-                    >download it</a>
+                    >download graph image</a>
                 </div>
             </div>
         );

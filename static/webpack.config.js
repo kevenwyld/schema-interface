@@ -27,11 +27,11 @@ module.exports = {
                 use: ['style-loader', 'css-loader?modules']
             },
             {
-                test: /\.svg$/,
+                test: /\.svg|woff|woff2$/,
                 type: 'asset/inline'
             },
             {
-                test: /\.(woff|woff2|eot|ttf|otf)$/,
+                test: /\.(|eot|ttf|otf)$/,
                 loader: 'file-loader',
             },
             {

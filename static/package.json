@@ -1,6 +1,6 @@
 {
   "name": "schema-interface",
-  "version": "0.5.1",
+  "version": "0.5.5",
   "description": "Schema Curation Interface",
   "private": true,
   "scripts": {
@@ -29,6 +29,7 @@
   "dependencies": {
     "@emotion/react": "^11.7.1",
     "@emotion/styled": "^11.6.0",
+    "@fontsource/roboto": "^4.5.3",
     "@material-ui/core": "^4.10.1",
     "@material-ui/icons": "^4.11.2",
     "@mui/icons-material": "^5.4.1",

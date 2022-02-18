@@ -140,7 +140,10 @@ class UploadModal extends Component {
         this.setState({ valid: false });
         let error = err.response.data;
         let error_title = error.slice(error.indexOf("<title>")+7, error.lastIndexOf("</title>"));
-        toast.error(error_title.slice(0, error_title.indexOf("//")));
+        let error_notif = error_title.slice(0, error_title.indexOf("//"));
+        if (error_notif.includes('root_node'))
+          error_notif = "UnboundLocalError: Root node not found.\nPlease make sure you have a root node that has an 'or' children_gate for hierarchy visualization.";
+        toast.error(error_notif);
       });
   }
 

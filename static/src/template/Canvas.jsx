@@ -10,7 +10,6 @@ import RefreshIcon from '@mui/icons-material/Refresh';
 import AspectRatioIcon from '@mui/icons-material/AspectRatio';
 import SaveIcon from '@mui/icons-material/Save';
 
-import Background from '../public/canvas_bg.png';
 import CyStyle from '../public/cy-style.json';
 import 'cytoscape-context-menus/cytoscape-context-menus.css';
 
@@ -23,7 +22,9 @@ cytoscape.use(klay);
 cytoscape.use(contextMenus);
 
 /* Graph view of the data.
-   Includes reload button. */
+   Includes reload, fit to graph, and save current view button.
+   Left click to expand node, right click to expand / collapse sidebar of information.
+   Right click also gives a context menu to remove elements for visualization purposes. */
 class Canvas extends React.Component {
     constructor(props) {
         super(props);
@@ -191,8 +192,7 @@ class Canvas extends React.Component {
         const style = {
             width: 'inherit', 
             height: '75vh',
-            borderStyle: 'solid',
-            backgroundImage: `url(${"/static" + Background})`
+            borderStyle: 'solid'
         };
 
         return (
@@ -213,7 +213,7 @@ class Canvas extends React.Component {
                         download={this.state.fileName}
                         href={this.state.downloadUrl}
                         ref={e=>this.dofileDownload = e}
-                    >download it</a>
+                    >download graph image</a>
                 </div>
             </div>
         );

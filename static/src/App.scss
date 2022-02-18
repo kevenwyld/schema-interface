@@ -1,58 +1,18 @@
 a {
     color: #ddd;
 }
-
-.special:hover {
-	color: rgb(192, 219, 255);
+.menu a {
+    text-decoration: none;
+    color: #fff;
+    display: block;
 }
 
-.menu a {
-  text-decoration: none;
-  color: #fff;
-  display: block;
+.menu a:hover {
+    color: rgb(192, 219, 255);
 }
 
 .Index{
-    font-family: Arial, Helvetica, sans-serif;
     text-align: center;
-}
-
-.Header {
-    display: inline-flex;
-    background-color: rgb(45, 46, 49);
-    width: 100vw;
-    height: 20vh;
-    text-align: center;
-    margin-left: 0 !important;
-
-    #logo {
-        height: inherit;
-        color: #ddd;
-
-        img {
-            height: inherit;
-        }
-    }
-
-    #title {
-        color: #ddd;
-    }
-
-    .nav-items{
-        text-align: center;
-    }
-
-    a{
-        color: #ddd;
-    }
-}
-
-.shrink {
-    height: 10vh;
-}
-
-.row {
-    width: inherit;
 }
 
 #viewer {
@@ -116,11 +76,11 @@ a {
 }
 
 input.form-check-input {
-width: 15px;
-height: 15px;
-padding: 0;
-margin: 0;
-vertical-align: bottom;
-position: relative;
-top: -1px;
+    width: 15px;
+    height: 15px;
+    padding: 0;
+    margin: 0;
+    vertical-align: bottom;
+    position: relative;
+    top: -1px;
 }

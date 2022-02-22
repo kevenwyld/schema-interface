@@ -53,7 +53,7 @@ export default class JSONEdit extends Component {
                         'children_gate': 'or',
                         'children': [],
                         'privateData': {
-                            '@type': '',
+                            '@type': 'kairos:Container',
                             'template': '',
                             'repeatable': false
                         }
@@ -106,6 +106,7 @@ export default class JSONEdit extends Component {
                     title: 'Insert Relation',
                     field: '',
                     value: {
+                        'name': '',
                         'relationSubject': 'Entities/00000/',
                         'relationPredicate': 'wd:Q1234567',
                         'relationObject': 'Entities/00000/',

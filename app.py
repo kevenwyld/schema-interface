@@ -398,6 +398,8 @@ def get_connected_nodes(selected_node):
     dict: list of nodes and list of edges
     
     """
+    # BUG XOR shows as a container
+
     n = []
     e = []
     id_set = set()

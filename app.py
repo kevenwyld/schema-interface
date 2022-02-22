@@ -297,75 +297,92 @@ def update_json(values):
     Returns:
     schemaJson (dict): new JSON 
     """
+    print("values received")
+    print(values)
+
     global schemaJson
     new_json = schemaJson
     node_id = values['id']
+    node_type = False
     key = values['key']
+    if key in ['source', 'target']:
+        node_type = 'edge'
     new_value = values['value']
-    node_type = node_id.split('/')[0].split(':')[-1]
+    if not node_type:
+        node_type = node_id.split('/')[0].split(':')[-1].lower()
     array_to_modify = False
     isRoot = node_id == schema_name
 
-    # TODO: change how participants are changed
-    # TODO: add entities and relations
-    # BUG: changing @id or child does not change outlinks
+    # TODO how to edit relations and participants through the sidebar?
 
-    # what key is it?
-    # special cases
-    if key in ['@id', 'child']:
-        key = '@id'
-        array_to_modify = 'id'
-    elif key == 'importance':
-        array_to_modify = 'importance'
-    elif key == 'name':
-        array_to_modify = 'name'
-    # look for the key in schema_key_dict
-    if not array_to_modify:
-        if node_type == 'Participants':
-            array_to_modify = 'participant'
-        else:
-            for keys in schema_key_dict:
-                if key in schema_key_dict[keys]:
-                    array_to_modify = keys
-                    break
-
-    # change schemaJson
-    for scheme in new_json['events']:
-        # scheme data
-        if scheme['@id'] == node_id:
-            if array_to_modify in ['root', 'name', 'privateData']:
-                if key in schema_key_dict['privateData']:
-                    scheme['privateData'][key] = new_value
-                    break
-                else:
-                    scheme[key] = new_value
-                    if key != 'name':
+    # entities or relations
+    if node_type in ['entities', 'relations']:
+        for entity in new_json[node_type]:
+            if entity['@id'] == node_id:
+                entity[key] = new_value
+    else:
+        # what key is it?
+        # special cases
+        if key in ['@id', 'child']:
+            key = '@id'
+            array_to_modify = 'id'
+        elif key == 'importance':
+            array_to_modify = 'importance'
+        elif key == 'name':
+            array_to_modify = 'name'
+        # look for the key in schema_key_dict
+        if not array_to_modify:
+            if node_type == 'participants':
+                array_to_modify = 'participant'
+            else:
+                for keys in schema_key_dict:
+                    if key in schema_key_dict[keys]:
+                        array_to_modify = keys
                         break
-                if isRoot:
-                    break    
-            elif array_to_modify == 'importance':
-                if isRoot:
-                    scheme['privateData'][key] = new_value
-                    break
-            elif array_to_modify == 'id':
-                scheme[key] = new_value
-                if isRoot:
-                    break
-        # participant data
-        if array_to_modify in ['participant', 'id'] and 'participants' in scheme:
-            for participant in scheme['participants']:
-                if participant['@id'] == node_id:
-                    scheme[key] = new_value
-        # children data
-        if array_to_modify in ['child', 'id', 'name'] and 'children' in scheme:
-            for child in scheme['children']:
-                if child['child'] == node_id:
-                    if array_to_modify == 'name':
-                        child['comment'] = new_value
-                    elif array_to_modify == 'id':
-                        child['child'] = new_value
+
+        # change schemaJson
+        for scheme in new_json['events']:
+            # scheme data
+            if scheme['@id'] == node_id:
+                if array_to_modify in ['root', 'name', 'privateData']:
+                    if key in schema_key_dict['privateData']:
+                        scheme['privateData'][key] = new_value
+                        break
                     else:
-                        child[key] = new_value
+                        scheme[key] = new_value
+                        if key != 'name':
+                            break
+                    if isRoot:
+                        break    
+                elif array_to_modify == 'importance':
+                    if isRoot:
+                        scheme['privateData'][key] = new_value
+                        break
+                elif array_to_modify == 'id':
+                    scheme[key] = new_value
+                    if isRoot:
+                        break
+            # participant data
+            if array_to_modify in ['participant', 'id'] and 'participants' in scheme:
+                for participant in scheme['participants']:
+                    if participant['@id'] == node_id:
+                        scheme[key] = new_value
+            # children data
+            if array_to_modify in ['child', 'id', 'name'] and 'children' in scheme:
+                for child in scheme['children']:
+                    if child['child'] == node_id:
+                        if array_to_modify == 'name':
+                            child['comment'] = new_value
+                        elif array_to_modify == 'id':
+                            child['child'] = new_value
+                        else:
+                            child[key] = new_value
+                    if array_to_modify == 'id' and len(child['outlinks']) > 0:
+                        for i in range(len(child['outlinks'])):
+                            if child['outlinks'][i] == node_id:
+                                child['outlinks'][i] = new_value
+                                print(child)
+
 
     schemaJson = new_json
     return schemaJson

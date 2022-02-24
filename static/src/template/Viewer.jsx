@@ -77,6 +77,8 @@ class Viewer extends Component {
                     error_notif = "UnboundLocalError: Root node not found.\nPlease make sure you have a root node that has an 'or' children_gate for hierarchy visualization.";
                 if (error_notif.includes("KeyError: 'children_gate'"))
                     error_notif = "KeyError: no children_gate in an event with children.";
+                if (error_notif.includes("KeyError: 'comment'"))
+                    error_notif = "KeyError: no comment in a child event.\nTry using the preprocess.py in scripts to make sure your file is suitable for curation.";
                 toast.error(error_notif);
                 return false;
             });

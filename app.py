@@ -297,8 +297,6 @@ def update_json(values):
     Returns:
     schemaJson (dict): new JSON 
     """
-    print("values received")
-    print(values)
 
     global schemaJson
     new_json = schemaJson
@@ -381,7 +379,6 @@ def update_json(values):
                         for i in range(len(child['outlinks'])):
                             if child['outlinks'][i] == node_id:
                                 child['outlinks'][i] = new_value
-                                print(child)
 
 
     schemaJson = new_json
@@ -398,7 +395,6 @@ def get_connected_nodes(selected_node):
     dict: list of nodes and list of edges
     
     """
-    # BUG XOR shows as a container
 
     n = []
     e = []

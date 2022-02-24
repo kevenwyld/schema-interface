@@ -25,9 +25,6 @@ import '@fontsource/roboto/500.css';
 import '@fontsource/roboto/700.css';
 import './App.scss';
 
-// TODO make link hover not blue
-// TODO make logo not blurry as hell
-
 const theme = createTheme({
   palette: {
     primary: {

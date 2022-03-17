@@ -3,7 +3,7 @@ import getopt, sys
 
 def NewId(currId, num, idDict = -1):
     oldId = currId.split('/')
-    newId = f"{oldId[0]}/{'0'*(5 - len(str(num)))}{num}/{oldId[-1]}"
+    newId = f"{oldId[0]}/{'0'*(5 - len(str(num)))}{num}/{oldId[-1] if len(oldId) > 2 else ''}"
     if idDict != -1:
         idDict[currId] = newId
     num += 1
@@ -122,7 +122,7 @@ def main(argv):
         if 'participants' in scheme:
             for participant in scheme['participants']:
                 pid = participant['@id'].split('/')
-                participant['@id'] = f'{pid[0]}/{numP}/{pid[2]}'
+                participant['@id'] = f"{pid[0]}/{numP}/{pid[2] if len(pid) > 2 else ''}"
                 numP += 1
 
                 participant['entity'] = entDict[participant['entity']]
@@ -133,10 +133,9 @@ def main(argv):
     schemaJson['entities'] = entities
     schemaJson['relations'] = relations
     jsonObject = json.dumps(schemaJson, indent = 4)
-    with open(f"{file}_reordered.json", "w") as outf:
+    with open(f"{file}.json", "w") as outf:
         outf.write(jsonObject)
     if v: print("done.")
-    print(f"New file is available at {file}_reordered.json.")
 
 if __name__ == "__main__":
     main(sys.argv[1:])

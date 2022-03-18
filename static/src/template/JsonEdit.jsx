@@ -1,23 +1,23 @@
-import React, {Component} from 'react';
+import React, { Component } from 'react';
 
 import JSONEditor from 'jsoneditor';
 import 'jsoneditor/dist/jsoneditor.min.css';
 
 export default class JSONEdit extends Component {
-    constructor(props){
+    constructor(props) {
         super(props);
 
         this.handleEvent = this.handleEvent.bind(this);
     }
 
     // sends JSON back to Viewer when field is out of focus
-    handleEvent(node, event){
-        if (event.type === 'blur'){
+    handleEvent(node, event) {
+        if (event.type === 'blur') {
             this.props.parentCallback(this.jsoneditor.get());
         }
     }
 
-    componentDidMount () {
+    componentDidMount() {
         const options = {
             mode: 'tree',
             enableTransform: false,
@@ -120,9 +120,9 @@ export default class JSONEdit extends Component {
         this.jsoneditor.set(this.props.schemaJson);
     }
 
-    componentWillUnmount () {
+    componentWillUnmount() {
         if (this.jsoneditor) {
-        this.jsoneditor.destroy();
+            this.jsoneditor.destroy();
         }
     }
 

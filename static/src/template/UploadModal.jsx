@@ -125,7 +125,7 @@ class UploadModal extends Component {
     Shows upload success or failure.
     If success, closes the sub window.
     */
-   
+
     const data = new FormData();
     for (var x = 0; x < this.state.selectedFile.length; x++) {
       data.append('file', this.state.selectedFile[x]);
@@ -139,7 +139,7 @@ class UploadModal extends Component {
       .catch(err => { // then print response status
         this.setState({ valid: false });
         let error = err.response.data;
-        let error_title = error.slice(error.indexOf("<title>")+7, error.lastIndexOf("</title>"));
+        let error_title = error.slice(error.indexOf("<title>") + 7, error.lastIndexOf("</title>"));
         let error_notif = error_title.slice(0, error_title.indexOf("//"));
         if (error_notif.includes('root_node'))
           error_notif = "UnboundLocalError: Root node not found.\nPlease make sure you have a root node that has an 'or' children_gate for hierarchy visualization.";
@@ -153,7 +153,7 @@ class UploadModal extends Component {
     where you can upload a file or cancel.
     Checks the validity of the file.
     */
-    
+
     const openModal = () => {
       document.getElementById("btn-modal").blur();
       this.toggle();
@@ -161,7 +161,7 @@ class UploadModal extends Component {
 
     return (
       <div>
-        <div style={{'display': 'flex', 'justifyContent': 'center'}}>
+        <div style={{ 'display': 'flex', 'justifyContent': 'center' }}>
           <Button id="btn-modal" variant="contained" endIcon={<UploadFileIcon />} onClick={openModal}>
             {this.props.buttonLabel}
           </Button>
@@ -174,7 +174,7 @@ class UploadModal extends Component {
             <Form>
               <FormGroup className="files">
                 <Label>Upload Your File</Label>
-                <Input type="file" className="form-control" style={{height: 'auto'}} onChange={this.onChangeHandler} />
+                <Input type="file" className="form-control" style={{ height: 'auto' }} onChange={this.onChangeHandler} />
               </FormGroup>
             </Form>
           </ModalBody>

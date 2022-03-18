@@ -9,14 +9,14 @@ const Editable = ({
     placeholder,
     children,
     ...props
-  }) => {
-      
+}) => {
+
     const [isEditing, setEditing] = useState(false);
 
     // Event handler while pressing any key while editing
     const handleKeyDown = (e) => {
         const keys = ["Escape", "Tab", "Enter"];
-        if (e in keys){
+        if (e in keys) {
             setEditing(false);
         }
     };
@@ -24,24 +24,24 @@ const Editable = ({
     return (
         <section {...props}>
             {isEditing ? (
-            <div
-                onBlur={() => setEditing(false)}
-                onKeyDown={e => handleKeyDown(e)}
-            >
-                {children}
+                <div
+                    onBlur={() => setEditing(false)}
+                    onKeyDown={e => handleKeyDown(e)}
+                >
+                    {children}
 
-            </div>
+                </div>
             ) : (
-            <div
-                onClick={() => setEditing(true)}
-            >
-                <span className={`${text ? "text-black" : "text-gray-500"}`}>
-                {text || placeholder || "___"}
-                </span>
-            </div>
+                <div
+                    onClick={() => setEditing(true)}
+                >
+                    <span className={`${text ? "text-black" : "text-gray-500"}`}>
+                        {text || placeholder || "___"}
+                    </span>
+                </div>
             )}
         </section>
     );
 };
-    
+
 export default Editable;

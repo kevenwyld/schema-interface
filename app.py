@@ -1,4 +1,3 @@
-from tkinter import E
 from flask import Flask, render_template, request
 import json
 
@@ -489,3 +488,6 @@ def reload_schema():
         'name': schema_name,
         'schemaJson': schemaJson
     })
+
+if __name__ == '__main__':
+    app.run(host="0.0.0.0", port=8081, debug=False)

@@ -16,8 +16,8 @@ import 'cytoscape-context-menus/cytoscape-context-menus.css';
 // TODO: add uncollapse / unselect without complete reload
 // will fix the temp solution of freezing the topmost tree
 // want to use https://github.com/iVis-at-Bilkent/cytoscape.js-expand-collapse
-    // will help with the weird recentering problem with the animation
-    // looks like it will require changing edge types and classes
+// will help with the weird recentering problem with the animation
+// looks like it will require changing edge types and classes
 cytoscape.use(klay);
 cytoscape.use(contextMenus);
 
@@ -33,14 +33,14 @@ class Canvas extends React.Component {
             hasSubtree: false,
             // static copy of topmost tree
             topTree: null,
-            removed: null, 
+            removed: null,
             downloadUrl: '',
             fileName: 'graph.png'
         }
 
         // create topTree
         var treeData = []
-        for (var {data:d} of this.state.canvasElements){
+        for (var { data: d } of this.state.canvasElements) {
             treeData.push(d);
         };
         this.state.topTree = treeData;
@@ -64,13 +64,13 @@ class Canvas extends React.Component {
         axios.get('/node', {
             params: {
                 ID: node.id
-              }
-            })
+            }
+        })
             .then(res => {
                 if (this.state.hasSubtree && this.state.topTree.includes(node)) {
                     this.removeSubTree();
                 }
-                this.setState({hasSubtree: true});
+                this.setState({ hasSubtree: true });
                 this.cy.add(res.data);
                 this.runLayout();
             })
@@ -81,7 +81,7 @@ class Canvas extends React.Component {
 
     removeSubTree() {
         this.reloadCanvas();
-        this.setState({hasSubtree: false});
+        this.setState({ hasSubtree: false });
     }
 
     runLayout() {
@@ -95,39 +95,39 @@ class Canvas extends React.Component {
             hasSubtree: false,
             showParticipants: true
         });
-        this.cy.elements().remove(); 
-        this.cy.add( this.state.canvasElements );
+        this.cy.elements().remove();
+        this.cy.add(this.state.canvasElements);
         this.runLayout();
     }
 
     removeObject(event) {
-        this.setState({removed: event.target});
+        this.setState({ removed: event.target });
         event.target.remove();
     }
 
-    restore(){
+    restore() {
         var res = null;
-        if (this.state.removed){
+        if (this.state.removed) {
             res = this.state.removed;
-            this.setState({removed: null});
+            this.setState({ removed: null });
             res.restore();
         }
     }
 
-    fitCanvas(){
+    fitCanvas() {
         this.cy.fit();
     }
 
-    download(event){
+    download(event) {
         event.preventDefault();
-        const image = this.cy.png({output: 'blob', bg: 'white', scale:'1.5'});
+        const image = this.cy.png({ output: 'blob', bg: 'white', scale: '1.5' });
         const url = URL.createObjectURL(image);
-        this.setState({downloadUrl: url},
+        this.setState({ downloadUrl: url },
             () => {
                 this.dofileDownload.click();
                 URL.revokeObjectURL(url);
-                this.setState({downloadUrl: ''})
-        })
+                this.setState({ downloadUrl: '' })
+            })
     }
 
     componentDidMount() {
@@ -138,7 +138,7 @@ class Canvas extends React.Component {
                 //click background
                 if (eventTarget === this.cy) {
                     // do nothing
-                // click node, show subtree
+                    // click node, show subtree
                 } else if (eventTarget.isNode()) {
                     let node = eventTarget.data();
                     this.showSubTree(node);
@@ -183,20 +183,20 @@ class Canvas extends React.Component {
     }
 
     componentDidUpdate(prevProps) {
-        if(!equal(this.props.elements, prevProps.elements)){
+        if (!equal(this.props.elements, prevProps.elements)) {
             this.reloadCanvas();
         }
     }
 
     render() {
         const style = {
-            width: 'inherit', 
+            width: 'inherit',
             height: '75vh',
             borderStyle: 'solid'
         };
 
         return (
-            <div className={this.props.className} style={{width: 'inherit', display: 'inline-flex'}}>
+            <div className={this.props.className} style={{ width: 'inherit', display: 'inline-flex' }}>
                 <CytoscapeComponent
                     elements={this.state.canvasElements}
                     layout={CyStyle.layout}
@@ -205,14 +205,14 @@ class Canvas extends React.Component {
                     cy={(cy) => { this.cy = cy }}
                     maxZoom={3} minZoom={0.5}
                 />
-                <div style={{'width': '15px', height: '3vh'}}>
-                    <RefreshIcon type='button' color="action" fontSize='large' onClick={this.reloadCanvas}/>
-                    <AspectRatioIcon type='button' color="action" fontSize='large' onClick={this.fitCanvas}/>
-                    <SaveIcon className="button" type="button" color="action" onClick={this.download}/>
-                    <a style={{display: "none"}}
+                <div style={{ 'width': '15px', height: '3vh' }}>
+                    <RefreshIcon type='button' color="action" fontSize='large' onClick={this.reloadCanvas} />
+                    <AspectRatioIcon type='button' color="action" fontSize='large' onClick={this.fitCanvas} />
+                    <SaveIcon className="button" type="button" color="action" onClick={this.download} />
+                    <a style={{ display: "none" }}
                         download={this.state.fileName}
                         href={this.state.downloadUrl}
-                        ref={e=>this.dofileDownload = e}
+                        ref={e => this.dofileDownload = e}
                     >download graph image</a>
                 </div>
             </div>

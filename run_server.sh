@@ -9,5 +9,5 @@ cd "$APP_DIR"
 echo "Starting server"
 
 export FLASK_APP=app.py
-export FLASK_ENV=development
-flask run
+export FLASK_ENV=production
+flask run -p 8081

@@ -38,7 +38,7 @@ class Viewer extends Component {
 
     callbackFunction(response) {
         /* Updates back-end data */
-        this.setState({ 
+        this.setState({
             schemaResponse: Object.assign({}, response.parsedSchema),
             schemaName: response.name,
             schemaJson: response.schemaJson,
@@ -46,21 +46,21 @@ class Viewer extends Component {
         });
     }
 
-    download(event){
+    download(event) {
         /* Handles downloading the schema JSON */
         event.preventDefault();
         const output = JSON.stringify(this.state.schemaJson, null, 4)
-        const blob = new Blob([output], {type: 'application/json'});
+        const blob = new Blob([output], { type: 'application/json' });
         const url = URL.createObjectURL(blob);
-        this.setState({downloadUrl: url},
+        this.setState({ downloadUrl: url },
             () => {
                 this.dofileDownload.click();
                 URL.revokeObjectURL(url);
-                this.setState({downloadUrl: ''})
-        })
+                this.setState({ downloadUrl: '' })
+            })
     }
 
-    jsonEditorCallback(json){
+    jsonEditorCallback(json) {
         /* Handles changes from the JSON editor */
         if (JSON.stringify(json) === JSON.stringify(this.state.schemaJson))
             return false;
@@ -71,7 +71,7 @@ class Viewer extends Component {
             })
             .catch(err => {
                 let error = err.response.data;
-                let error_title = error.slice(error.indexOf("<title>")+7, error.lastIndexOf("</title>"));
+                let error_title = error.slice(error.indexOf("<title>") + 7, error.lastIndexOf("</title>"));
                 let error_notif = error_title.slice(0, error_title.indexOf("//"));
                 if (error_notif.includes('root_node'))
                     error_notif = "UnboundLocalError: Root node not found.\nPlease make sure you have a root node that has an 'or' children_gate for hierarchy visualization.";
@@ -107,7 +107,7 @@ class Viewer extends Component {
             })
             .catch(err => {
                 let error = err.response.data;
-                let error_title = error.slice(error.indexOf("<title>")+7, error.lastIndexOf("</title>"));
+                let error_title = error.slice(error.indexOf("<title>") + 7, error.lastIndexOf("</title>"));
                 let error_notif = error_title.slice(0, error_title.indexOf("//"));
                 toast.error(error_notif);
                 return false;
@@ -119,14 +119,14 @@ class Viewer extends Component {
         let schemaHeading = "";
         let jsonEdit = "";
         let sidebarClassName = this.state.isOpen ? "sidebar-open" : "sidebar-closed";
-        let canvasClassName = this.state.isOpen ? "canvas-shrunk": "canvas-wide";
+        let canvasClassName = this.state.isOpen ? "canvas-shrunk" : "canvas-wide";
 
         // a schema exists
         if (this.state.schemaResponse !== '') {
             // title of schema
-            schemaHeading = <h3 className="schema-name col-md-8" style={{textAlign: 'center'}}>
-                                {this.state.schemaName}
-                            </h3>;
+            schemaHeading = <h3 className="schema-name col-md-8" style={{ textAlign: 'center' }}>
+                {this.state.schemaName}
+            </h3>;
 
             // graph (cytoscape)
             canvas = <Canvas id="canvas"
@@ -134,31 +134,31 @@ class Viewer extends Component {
                 sidebarCallback={this.sidebarCallback}
                 className={canvasClassName}
             />;
-            
+
             jsonEdit = <JsonEdit
-                style={{width: 'inherit', height: '75vh'}}
+                style={{ width: 'inherit', height: '75vh' }}
                 schemaJson={this.state.schemaJson}
                 parentCallback={this.jsonEditorCallback}
             />
-        
+
         }
 
         return (
             <div id="viewer">
                 <div className='container'>
-                    <ToastContainer theme="colored"/>
+                    <ToastContainer theme="colored" />
                     <UploadModal buttonLabel="Upload Schema" parentCallback={this.callbackFunction} />
                     <IconButton aria-label="download" disabled={!this.state.isUpload} color="primary" onClick={this.download}>
                         <DownloadIcon />
                     </IconButton>
-                    <a style={{display: "none"}}
+                    <a style={{ display: "none" }}
                         download={this.state.fileName}
                         href={this.state.downloadUrl}
-                        ref={e=>this.dofileDownload = e}
+                        ref={e => this.dofileDownload = e}
                     >download it</a>
                 </div>
                 <div className="row">{schemaHeading}</div>
-                <div style={{display: 'inline-flex'}}>
+                <div style={{ display: 'inline-flex' }}>
                     <SideEditor
                         data={this.state.nodeData}
                         isOpen={this.state.isOpen}

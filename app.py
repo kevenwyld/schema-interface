@@ -11,7 +11,7 @@ app = Flask(__name__, static_folder='./static', template_folder='./static')
 
 nodes = {}
 edges = []
-schemaJson = {}
+schema_json = {}
 
 # SDF version 1.4
 schema_key_dict = {
@@ -173,7 +173,7 @@ def handle_containers(nodes, edges, containers):
     
     return nodes, edges
 
-def get_nodes_and_edges(schemaJson):
+def get_nodes_and_edges(schema_json):
     """Creates lists of nodes and edges through the schema event ontology.
 
     Parameters:
@@ -185,12 +185,12 @@ def get_nodes_and_edges(schemaJson):
     """
     
     # get entities and relations
-    nodes = get_entities(schemaJson['entities'])
-    edges = get_relations(schemaJson['relations'])
+    nodes = get_entities(schema_json['entities'])
+    edges = get_relations(schema_json['relations'])
 
     # get events and attach entities to them
     containers_to_remove = []
-    events = schemaJson['events']
+    events = schema_json['events']
     for event in events:
         # create event node
         # if node already exists, add information
@@ -297,48 +297,53 @@ def update_json(values):
     schemaJson (dict): new JSON 
     """
 
-    global schemaJson
-    new_json = schemaJson
+    print(values)
+    global schema_json
+    new_json = schema_json
     node_id = values['id']
     node_type = False
     key = values['key']
     if key in ['source', 'target']:
         node_type = 'edge'
+        print("edge")
+        return new_json
     new_value = values['value']
     if not node_type:
         node_type = node_id.split('/')[0].split(':')[-1].lower()
     array_to_modify = False
-    isRoot = node_id == schema_name
+    is_root = node_id == schema_name
 
     # TODO how to edit relations and participants through the sidebar?
 
-    # entities or relations
-    if node_type in ['entities', 'relations']:
-        for entity in new_json[node_type]:
+    # entities
+    if node_type == 'entities':
+        print("entities[]")
+        # entity data
+        for entity in new_json['entities']:
             if entity['@id'] == node_id:
                 entity[key] = new_value
-    else:
-        # what key is it?
-        # special cases
-        if key in ['@id', 'child']:
-            key = '@id'
-            array_to_modify = 'id'
-        elif key == 'importance':
-            array_to_modify = 'importance'
-        elif key == 'name':
-            array_to_modify = 'name'
-        # look for the key in schema_key_dict
-        if not array_to_modify:
-            if node_type == 'participants':
-                array_to_modify = 'participant'
-            else:
-                for keys in schema_key_dict:
-                    if key in schema_key_dict[keys]:
-                        array_to_modify = keys
-                        break
+        if key != '@id':
+            schema_json = new_json
+            return schema_json
+        else:
+            # relation data
+            for relation in new_json['relations']:
+                if relation['relationSubject'] == node_id:
+                    relation['relationSubject'] = new_value
+                if relation['relationObject'] == node_id:
+                    relation['relationObject'] = new_value
+                pass
 
-        # change schemaJson
-        for scheme in new_json['events']:
+    # nodes
+    print("nodes[]")
+    for scheme in new_json['events']:
+        # entity id search
+        if node_type == 'entities':
+            if 'participants' in scheme:
+                for participant in scheme['participants']:
+                    if participant['entity'] == node_id:
+                        participant['entity'] = new_value
+        else:
             # scheme data
             if scheme['@id'] == node_id:
                 if array_to_modify in ['root', 'name', 'privateData']:
@@ -349,15 +354,15 @@ def update_json(values):
                         scheme[key] = new_value
                         if key != 'name':
                             break
-                    if isRoot:
+                    if is_root:
                         break    
                 elif array_to_modify == 'importance':
-                    if isRoot:
+                    if is_root:
                         scheme['privateData'][key] = new_value
                         break
                 elif array_to_modify == 'id':
                     scheme[key] = new_value
-                    if isRoot:
+                    if is_root:
                         break
             # participant data
             if array_to_modify in ['participant', 'id'] and 'participants' in scheme:
@@ -379,9 +384,9 @@ def update_json(values):
                             if child['outlinks'][i] == node_id:
                                 child['outlinks'][i] = new_value
 
-
-    schemaJson = new_json
-    return schemaJson
+    schema_json = new_json
+    print("return")
+    return schema_json
 
 def get_connected_nodes(selected_node):
     """Constructs graph to be visualized by the viewer.
@@ -443,17 +448,17 @@ def upload():
     """Uploads JSON and processes it for graph view."""
     file = request.files['file']
     schema_string = file.read().decode("utf-8")
-    global schemaJson
+    global schema_json
     global nodes
     global edges
     global schema_name
-    schemaJson = json.loads(schema_string)
-    nodes, edges = get_nodes_and_edges(schemaJson)
+    schema_json = json.loads(schema_string)
+    nodes, edges = get_nodes_and_edges(schema_json)
     schema_name, parsed_schema = get_connected_nodes('root')
     return json.dumps({
         'parsedSchema': parsed_schema,
         'name': schema_name,
-        'schemaJson': schemaJson
+        'schemaJson': schema_json
     })
 
 @app.route('/node', methods=['GET', 'POST'])
@@ -476,15 +481,15 @@ def get_subtree_or_update_node():
 def reload_schema():
     """Reloads schema; does the same thing as upload."""
     schema_string = request.data.decode("utf-8")
-    global schemaJson
+    global schema_json
     global nodes
     global edges
     global schema_name
-    schemaJson = json.loads(schema_string)
-    nodes, edges = get_nodes_and_edges(schemaJson)
+    schema_json = json.loads(schema_string)
+    nodes, edges = get_nodes_and_edges(schema_json)
     schema_name, parsed_schema = get_connected_nodes('root')
     return json.dumps({
         'parsedSchema': parsed_schema,
         'name': schema_name,
-        'schemaJson': schemaJson
+        'schemaJson': schema_json
     })

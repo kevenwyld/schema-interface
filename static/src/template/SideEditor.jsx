@@ -47,7 +47,7 @@ function SideEditor(props) {
     }
 
     let i = 0;
-    const excluded_ids = ['id', '_label', '_type', '_shape', 'outlinks', '_edge_type'];
+    const excluded_ids = ['id', '_label', '_type', '_shape', 'outlinks', '_edge_type', 'child'];
 
     return (
         <div className={props.className}>

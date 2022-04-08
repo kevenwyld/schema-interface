@@ -305,7 +305,6 @@ def update_json(values):
     key = values['key']
     if key in ['source', 'target']:
         node_type = 'edge'
-        print("edge")
         return new_json
     new_value = values['value']
     if not node_type:
@@ -317,7 +316,6 @@ def update_json(values):
 
     # entities
     if node_type == 'entities':
-        print("entities[]")
         # entity data
         for entity in new_json['entities']:
             if entity['@id'] == node_id:
@@ -335,7 +333,6 @@ def update_json(values):
                 pass
 
     # nodes
-    print("nodes[]")
     for scheme in new_json['events']:
         # entity id search
         if node_type == 'entities':
@@ -346,46 +343,24 @@ def update_json(values):
         else:
             # scheme data
             if scheme['@id'] == node_id:
-                if array_to_modify in ['root', 'name', 'privateData']:
-                    if key in schema_key_dict['privateData']:
-                        scheme['privateData'][key] = new_value
-                        break
-                    else:
-                        scheme[key] = new_value
-                        if key != 'name':
-                            break
-                    if is_root:
-                        break    
-                elif array_to_modify == 'importance':
-                    if is_root:
-                        scheme['privateData'][key] = new_value
-                        break
-                elif array_to_modify == 'id':
-                    scheme[key] = new_value
-                    if is_root:
-                        break
-            # participant data
-            if array_to_modify in ['participant', 'id'] and 'participants' in scheme:
-                for participant in scheme['participants']:
-                    if participant['@id'] == node_id:
-                        scheme[key] = new_value
+                scheme[key] = new_value
+                if key not in ['@id', 'child', 'name'] or is_root:
+                    break
             # children data
-            if array_to_modify in ['child', 'id', 'name'] and 'children' in scheme:
+            if 'children' in scheme:
+                new_key = 'comment' if key == 'name' else 'child'
                 for child in scheme['children']:
+                    # child
                     if child['child'] == node_id:
-                        if array_to_modify == 'name':
-                            child['comment'] = new_value
-                        elif array_to_modify == 'id':
-                            child['child'] = new_value
-                        else:
-                            child[key] = new_value
-                    if array_to_modify == 'id' and len(child['outlinks']) > 0:
+                        child[new_key] = new_value
+                    # child outlinks
+                    if new_key == 'child':
                         for i in range(len(child['outlinks'])):
                             if child['outlinks'][i] == node_id:
                                 child['outlinks'][i] = new_value
+            # participant data is not listed in sidebar
 
     schema_json = new_json
-    print("return")
     return schema_json
 
 def get_connected_nodes(selected_node):

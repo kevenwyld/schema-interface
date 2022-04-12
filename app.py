@@ -53,8 +53,9 @@ def create_edge(_source, _target, _label='', _edge_type=''):
     """
     return {
         'data': {
-            'id': f"{_source}_{_target}",
+            'id': f"{_source}__{_target}",
             '_label': f"\n\u2060{_label}\n\u2060",
+            'name': _label,
             'source': _source,
             'target': _target,
             '_edge_type': _edge_type
@@ -303,13 +304,12 @@ def update_json(values):
     node_id = values['id']
     node_type = False
     key = values['key']
+    new_value = values['value']
     if key in ['source', 'target']:
         node_type = 'edge'
         return new_json
-    new_value = values['value']
-    if not node_type:
+    else:
         node_type = node_id.split('/')[0].split(':')[-1].lower()
-    array_to_modify = False
     is_root = node_id == schema_name
 
     # TODO how to edit relations and participants through the sidebar?

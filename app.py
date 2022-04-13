@@ -296,8 +296,6 @@ def update_json(values):
     Returns:
     schemaJson (dict): new JSON 
     """
-    print("======================")
-    print(values)
     global schema_json
     new_json = schema_json
     node_id = values['id']
@@ -332,7 +330,6 @@ def update_json(values):
                 pass
 
     # nodes
-    print("---Looking through schemes")
     # child key
     if key == 'name':
         child_key = 'comment'
@@ -342,7 +339,6 @@ def update_json(values):
         child_key = key
         
     for scheme in new_json['events']:
-        print(scheme['@id'])
         # entity id search
         if node_type == 'entities':
             if 'participants' in scheme:
@@ -353,37 +349,28 @@ def update_json(values):
             # scheme data
             if scheme['@id'] == node_id:
                 if key in scheme:
-                    print(f"--Found. {scheme[key]}->{new_value}")
                     scheme[key] = new_value
                     if key == 'comment':
-                        print("--break")
                         break
                     if key in schema_key_dict['event'] or is_root:
-                        print("--break")
                         break
                 elif key in schema_key_dict['privateData'] and 'privateData' in scheme:
                     if key in scheme['privateData']:
-                        print(f"--Found. {scheme['privateData'][key]}->{new_value}")
                         scheme['privateData'][key] = new_value
                         break
             # children data
             if 'children' in scheme and child_key in schema_key_dict['child']:
-                print("--child search:", child_key)
                 for child in scheme['children']:
                     # child
                     if child['child'] == node_id:
-                        print(f"----Found. {child[child_key]}->{new_value}")
                         child[child_key] = new_value
                     # child outlinks
                     if child_key == 'child':
                         for i in range(len(child['outlinks'])):
                             if child['outlinks'][i] == node_id:
-                                print(f"----Outlink Found. {child['outlinks'][i]}->{new_value}")
                                 child['outlinks'][i] = new_value
             # participant data is not listed in sidebar
 
-    print("finished schemes. returning.")
-    print("============================")
     schema_json = new_json
     return schema_json
 

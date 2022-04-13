@@ -80,7 +80,7 @@ export default function App() {
               color="inherit"
               sx={{ mr: 2 }}
             >
-              <a target="_blank" rel="noopener" href="https://chrysographes.notion.site/Schema-Curation-Manual-c17f79c7450246d3ad7796e43bebea1b">
+              <a target="_blank" rel="noopener" href="https://chrysographes.notion.site/Schema-Curation-Manual-018034f383a24f75a4c10fc378678d75">
                 <HelpIcon />
               </a>
             </IconButton>

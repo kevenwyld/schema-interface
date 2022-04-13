@@ -297,7 +297,7 @@ def update_json(values):
     Returns:
     schemaJson (dict): new JSON 
     """
-
+    print("======================")
     print(values)
     global schema_json
     new_json = schema_json
@@ -333,7 +333,10 @@ def update_json(values):
                 pass
 
     # nodes
+    event_found = False
+    print("---Looking through schemes")
     for scheme in new_json['events']:
+        print(scheme['@id'])
         # entity id search
         if node_type == 'entities':
             if 'participants' in scheme:
@@ -343,12 +346,17 @@ def update_json(values):
         else:
             # scheme data
             if scheme['@id'] == node_id:
-                scheme[key] = new_value
+                if key in scheme:
+                    scheme[key] = new_value
+                    event_found = True
+                    if key == 'comment':
+                        break
                 if key not in ['@id', 'child', 'name'] or is_root:
                     break
             # children data
             if 'children' in scheme:
-                new_key = 'comment' if key == 'name' else 'child'
+                new_key = 'comment' if key in ['name', 'comment'] else 'child'
+                print("new_key:", new_key)
                 for child in scheme['children']:
                     # child
                     if child['child'] == node_id:
@@ -360,6 +368,7 @@ def update_json(values):
                                 child['outlinks'][i] = new_value
             # participant data is not listed in sidebar
 
+    print("______________")
     schema_json = new_json
     return schema_json
 

@@ -2,7 +2,7 @@ import React from 'react';
 import CytoscapeComponent from 'react-cytoscapejs';
 import cytoscape from 'cytoscape';
 import klay from 'cytoscape-klay';
-import contextMenus from 'cytoscape-context-menus'
+import contextMenus from 'cytoscape-context-menus';
 
 import axios from 'axios';
 import equal from 'fast-deep-equal';
@@ -191,7 +191,7 @@ class Canvas extends React.Component {
     render() {
         const style = {
             width: 'inherit',
-            height: '75vh',
+            height: '80vh',
             borderStyle: 'solid'
         };
 

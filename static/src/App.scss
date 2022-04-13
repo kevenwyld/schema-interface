@@ -1,86 +1,87 @@
 a {
     color: #ddd;
-}
-.menu a {
+  }
+  
+  .menu a {
     text-decoration: none;
     color: #fff;
     display: block;
-}
-
-.menu a:hover {
-    color: rgb(192, 219, 255);
-}
-
-.Index{
+  }
+  
+  .menu a:hover {
+    color: #c0dbff;
+  }
+  
+  .Index {
     text-align: center;
-}
-
-#viewer {
-    width: 100vw;
-
-    .container {
-        display: flex;
-        align-items: center;
-        justify-content: center;
-        height: 4vh;
-    }
-    .schema-name {
-        float: right;
-        margin-right: 2vw;
-    }
-}
-
-.button {
+  }
+  
+  #viewer {
+    width: 99vw;
+  }
+  
+  #viewer .container {
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    height: 4vh;
+  }
+  
+  #viewer .schema-name {
+    margin-left: 16vw;
+  }
+  
+  .button {
     margin-left: 5px;
-}
-
-.button:hover {
+  }
+  
+  .button:hover {
     background: #83a3bb;
-}
-
-.canvas-shrunk {
+  }
+  
+  .canvas-shrunk {
     margin: 0 1vw;
-    width: 52vw !important;
-}
-
-.canvas-wide {
+    width: 54vw !important;
+  }
+  
+  .canvas-wide {
     margin: 0 1vw;
     width: 67vw !important;
-}
-
-.sidebar-open {
-    width: 15vw;
-    height: 75vh;
-    padding: 1vw;
-    transition: left .3s ease-in-out;
+  }
+  
+  .sidebar-open {
+    width: 10.5vw;
+    height: 80vh;
+    padding: 0.4vw;
+    transition: left 0.5s ease-in-out;
     border: 1px solid rgba(0, 0, 0, 0.2);
     overflow-y: auto;
-    margin-left: 0 1vw;
+    margin: 0 1vw;
     background-color: #eee;
-}
-
-.sidebar-closed {
+  }
+  
+  .sidebar-closed {
     width: 0;
     height: 100%;
-    transition: left .3s ease-in-out;
+    transition: left 0.5s ease-in-out;
     border: 0;
     margin: 0;
-}
-
-#schema-json {
+  }
+  
+  #schema-json {
     width: 28vw;
-    height: 75vh;
+    height: 80vh;
     margin: 0 1vw;
     border: solid darkslateblue 2px;
     overflow-y: auto;
-}
-
-input.form-check-input {
-    width: 15px;
-    height: 15px;
+  }
+  
+  input.form-check-input {
+    width: auto;
+    height: auto;
     padding: 0;
     margin: 0;
     vertical-align: bottom;
     position: relative;
     top: -1px;
-}
+  }

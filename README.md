@@ -2,7 +2,7 @@
 
 ## Introduction
 
-This is a web tool to visualize KAIROS Schema Format generated schemas using Cytoscape.js and React.js. The tool also allows editing of these schemas for curation purpose. Current supported SDF version is **1.4**.
+This is a web tool to visualize KAIROS Schema Format generated schemas using Cytoscape.js and React.js. The tool also allows editing of these schemas for curation purpose. Current supported SDF version is **2.0**.
 
 **This project is currently a work in progress and is in alpha testing. Feedbacks and suggestions are welcome.**
 
@@ -37,7 +37,7 @@ The tool mainly uses 3 resources:
   * Edits on the JSON are handled using the `jsoneditor`[[1]](https://github.com/josdejong/jsoneditor) library or through the sidebar next to the canvas.
 
 ## Usage
-[Manual](https://chrysographes.notion.site/Schema-Curation-Manual-c17f79c7450246d3ad7796e43bebea1b)
+[Manual](https://chrysographes.notion.site/Schema-Curation-Manual-018034f383a24f75a4c10fc378678d75)
 
 ### Viewer
 - **Upload Schema** to upload a JSON file from your local file system, and **download** it when you are done with curation.

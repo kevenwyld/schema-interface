@@ -1,12 +1,5 @@
 import React, { useEffect, useState } from "react";
-import {
-    List,
-    ListItem,
-    ListItemText,
-    Divider
-} from '@mui/material/';
 import { isBoolean, isEmpty } from "lodash";
-import Editable from './Editable';
 import Switch from "@mui/material/Switch";
 import TextField from "@mui/material/TextField";
 import FormControlLabel from "@mui/material/FormControlLabel";
@@ -36,6 +29,7 @@ function SideEditor(props) {
     }, [props.data]);
 
     const handleChange = (e) => {
+        // change text in textfield
         if(edit === ''){
             setEdit(data.propData[e.target.id]);
         }
@@ -47,22 +41,30 @@ function SideEditor(props) {
     };
 
     const handleEdit = (e) => {
+        // check if the comment changed is the same as the name
+        if (edit === data.propData['name']){
+            e.target.id = 'name';
+        }
+        // create data to pass up
         const node_data = {
             id: data.propData['id'],
             key: e.target.id,
             value: e.target.value
         };
+        // change sidebar internal id ifthe id is changed
         if(e.target.id === '@id'){
             data.propData['id'] = e.target.value;
             setData({ ...data });
             console.log(data.propData['id']);
         }
+        // pass data up if it was edited
         if(edit !== ''){
             props.sideEditorCallback(node_data);
         }
     };
 
     const handleSwitch = (e) => {
+        // check if switch was pressed and pass data up
         const val = data.propData[e.target.name];
         const new_val = e.target.checked;
         if(val !== new_val){
@@ -71,6 +73,8 @@ function SideEditor(props) {
                 key: e.target.name,
                 value: new_val
             };
+            data.propData[e.target.name] = e.target.checked;
+            setData({ ...data});
             props.sideEditorCallback(node_data);
         }
     };

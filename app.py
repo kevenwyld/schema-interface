@@ -16,7 +16,7 @@ schema_json = {}
 # SDF version 1.4
 schema_key_dict = {
     'event': ['@id', 'name', 'comment', 'description', 'aka', 'qnode', 'qlabel', 'minDuration', 'maxDuration', 'goal', 'ta1explanation', 'importance', 'children_gate'],
-    'child': ['child', 'comment', 'optional', 'importance', 'outlinks', 'outlink_gate'],
+    'child': ['child', 'comment', 'optional', 'importance', 'outlinks'],
     'privateData': ['@type', 'template', 'repeatable', 'importance'],
     'entity': ['name', '@id', 'qnode', 'qlabel', 'centrality']
 }
@@ -78,8 +78,7 @@ def extend_node(node, obj):
         if key in schema_key_dict[node['data']['_type']]:
             if key == 'optional' and obj[key]:
                 node['classes'] = 'optional'
-            else:
-                node['data'][key] = obj[key]
+            node['data'][key] = obj[key]
     if 'privateData' in obj.keys() and len(obj['privateData']) > 0:
         for key in obj['privateData'].keys():
             if key in schema_key_dict['privateData']:
@@ -333,8 +332,15 @@ def update_json(values):
                 pass
 
     # nodes
-    event_found = False
     print("---Looking through schemes")
+    # child key
+    if key == 'name':
+        child_key = 'comment'
+    elif key == '@id':
+        child_key = 'child'
+    else:
+        child_key = key
+        
     for scheme in new_json['events']:
         print(scheme['@id'])
         # entity id search
@@ -347,28 +353,37 @@ def update_json(values):
             # scheme data
             if scheme['@id'] == node_id:
                 if key in scheme:
+                    print(f"--Found. {scheme[key]}->{new_value}")
                     scheme[key] = new_value
-                    event_found = True
                     if key == 'comment':
+                        print("--break")
                         break
-                if key not in ['@id', 'child', 'name'] or is_root:
-                    break
+                    if key in schema_key_dict['event'] or is_root:
+                        print("--break")
+                        break
+                elif key in schema_key_dict['privateData'] and 'privateData' in scheme:
+                    if key in scheme['privateData']:
+                        print(f"--Found. {scheme['privateData'][key]}->{new_value}")
+                        scheme['privateData'][key] = new_value
+                        break
             # children data
-            if 'children' in scheme:
-                new_key = 'comment' if key in ['name', 'comment'] else 'child'
-                print("new_key:", new_key)
+            if 'children' in scheme and child_key in schema_key_dict['child']:
+                print("--child search:", child_key)
                 for child in scheme['children']:
                     # child
                     if child['child'] == node_id:
-                        child[new_key] = new_value
+                        print(f"----Found. {child[child_key]}->{new_value}")
+                        child[child_key] = new_value
                     # child outlinks
-                    if new_key == 'child':
+                    if child_key == 'child':
                         for i in range(len(child['outlinks'])):
                             if child['outlinks'][i] == node_id:
+                                print(f"----Outlink Found. {child['outlinks'][i]}->{new_value}")
                                 child['outlinks'][i] = new_value
             # participant data is not listed in sidebar
 
-    print("______________")
+    print("finished schemes. returning.")
+    print("============================")
     schema_json = new_json
     return schema_json
 

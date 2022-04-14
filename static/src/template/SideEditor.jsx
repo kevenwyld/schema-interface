@@ -12,7 +12,7 @@ function SideEditor(props) {
     Handles sidebar that shows general information about a node
     selected via right-click.
 
-    When an inline field is left-clicked to be edited, the
+    When an text field is left-clicked to be edited, the
     original data is frozen in 'edit'.
     The JSON is only changed if the field is changed out of
     focus and the field is different from the frozen data. 
@@ -25,11 +25,12 @@ function SideEditor(props) {
     const [edit, setEdit] = useState('');
 
     useEffect(() => {
+        // populates sidebar whenever data is changed
         setData({ ...data, propData: props.data })
     }, [props.data]);
 
     const handleChange = (e) => {
-        // change text in textfield
+        // change text that shows up in text field
         if(edit === ''){
             setEdit(data.propData[e.target.id]);
         }
@@ -41,17 +42,22 @@ function SideEditor(props) {
     };
 
     const handleEdit = (e) => {
-        // check if the comment changed is the same as the name
-        if (edit === data.propData['name']){
-            e.target.id = 'name';
-        }
         // create data to pass up
         const node_data = {
             id: data.propData['id'],
             key: e.target.id,
             value: e.target.value
         };
-        // change sidebar internal id ifthe id is changed
+        
+        // change comment if it's the same as the name
+        if (edit === data.propData['name']){
+            e.target.id = 'name';
+            if (edit === data.propData['comment']){
+                data.propData['comment'] = e.target.value;
+                setData({ ...data });
+            }
+        }
+        // change sidebar internal id if the id is changed
         if(e.target.id === '@id'){
             data.propData['id'] = e.target.value;
             setData({ ...data });
@@ -89,7 +95,7 @@ function SideEditor(props) {
                 : <Box
                     component="form"
                     sx={{
-                    '& > :not(style)': { m: 1, width: '25ch' },
+                    '& > :not(style)': { m: 1, width: 'auto' },
                     }}
                     noValidate
                     autoComplete="off"
